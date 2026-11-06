@@ -9,7 +9,7 @@ A Library Management System built with Laravel. It handles book records, borrowi
 ## Tech Stack
 
 - PHP / Laravel (Blade templating)
-- Bootstrap 5
+- Bootstrap
 - Chart.js
 - MySQL-compatible database (TiDB Cloud)
 
@@ -74,9 +74,104 @@ Files are located in `app/Console/Commands/`.
 - Quantities are randomly generated.
 - Some books may have `Unknown` publishers or be placed in a slightly different category than expected.
 
-**Requirements:** PHP 8.2+, Composer, Node.js, Git, and MySQL (XAMPP) or a TiDB Cloud connection.
+---
 
-> **Note:** Node.js and `npm` are **not required** for now. Bootstrap 5 and Chart.js are loaded through CDN links in the Blade layout, so there is no `npm install` or `npm run build` step.
-> The default Laravel starter files for Vite and Tailwind (`package.json`, `vite.config.js`, `resources/css`, `resources/js`) are still in the project and may be removed or used later. If the project switches to npm-based assets, this README will be updated.
->
-> An internet connection is needed for pages to load their styles and charts.
+## Requirements
+
+Before installing the project, make sure you have the following:
+
+- PHP 8.2 or newer
+- Composer
+- Git
+- Beekeeper Studio (to view DB) or access to a TiDB Cloud database credentials/dashboard
+- A code editor (VS Code or PhpStorm recommended)
+
+An internet connection is also needed to load externally hosted frontend resources through CDN links.
+
+---
+
+## Installation and Setup
+
+### 1. Clone the Repository
+
+Open your terminal and navigate to your preferred project directory.
+
+```bash
+git clone https://github.com/anjlalxn/bibliotheca.git
+```
+
+Navigate into the Laravel application directory:
+
+```bash
+cd bibliotheca/bibliotheca-laravel
+```
+
+### 2. Install Dependencies
+
+Install the PHP dependencies using Composer:
+
+```bash
+composer install
+```
+
+### 3. Configure the Environment
+
+Create your local environment configuration file:
+
+**Windows (Command Prompt):**
+
+```bash
+copy .env.example .env
+```
+
+**macOS / Linux:**
+
+```bash
+cp .env.example .env
+```
+
+Generate your Laravel application key:
+
+```bash
+php artisan key:generate
+```
+
+
+---
+
+## Frontend Setup
+
+No additional frontend installation is necessary.
+
+The project uses:
+
+- **Bootstrap** for layouts, components, and responsive styling.
+- **Vanilla JavaScript** for client-side interactions.
+- **Blade templates** for rendering dynamic pages.
+
+Bootstrap resources are loaded through CDN links in the Blade layouts.
+
+There is no need to run `npm install`, `npm run dev`, or `npm run build` for the current setup.
+
+---
+
+
+## Troubleshooting
+
+| Problem | Possible Solution |
+|---|---|
+| `composer` is not recognized | Install Composer and add it to your system PATH. |
+| `php` is not recognized | Install PHP and configure your system PATH. |
+| Database connection error | Check your database credentials and ensure the database server is running. |
+| Application key missing | Run `php artisan key:generate`. |
+| Missing dependencies | Run `composer install` inside `bibliotheca-laravel`. |
+| Tables do not exist | Check your database connection and run `php artisan migrate` if appropriate. |
+| Styles are not loading | Check your internet connection and CDN availability. |
+
+---
+
+## Project Repository
+
+GitHub: https://github.com/anjlalxn/bibliotheca
+
+
