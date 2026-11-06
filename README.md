@@ -13,6 +13,14 @@ A Library Management System built with Laravel. It handles book records, borrowi
 - Chart.js
 - MySQL-compatible database (TiDB Cloud)
 
+## Repository Rules
+
+- ```main``` branch is the latest branch to work on, unless stated otherwise.
+- Do not push to main. Create a separate branch, and it will be later be merged there.
+- Follow branch naming ```yourname/your-feature``` to avoid confusions and determine who did which parts.
+- Double check sensitive files in your ```gitignore```. Do not push ```env``` and other private files.
+
+
 ## Setup
 
 Run these inside `bibliotheca-laravel`:
@@ -87,6 +95,7 @@ Before installing the project, make sure you have the following:
 - A code editor (VS Code or PhpStorm recommended)
 
 An internet connection is also needed to load externally hosted frontend resources through CDN links.
+
 
 ---
 
