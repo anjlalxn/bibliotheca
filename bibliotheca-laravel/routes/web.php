@@ -20,9 +20,12 @@ Route::get('/books', [BookController::class, 'index'])->name('books');
 Route::post('/books', [BookController::class, 'store'])->name('books.store');
 Route::delete('/books/{book}', [BookController::class, 'destroy'])->name('books.destroy');
 
-Route::get('/borrowing', function () {
-    return view('placeholder', ['title' => 'Borrowing']);
-})->name('borrowing');
+use App\Http\Controllers\BorrowingController;
+
+Route::get('/borrowing', [BorrowingController::class, 'index'])->name('borrowing');
+Route::get('/borrowing/create', [BorrowingController::class, 'create'])->name('borrowing.create');
+Route::post('/borrowing', [BorrowingController::class, 'store'])->name('borrowing.store');
+Route::get('/borrowing/{borrowing}', [BorrowingController::class, 'show'])->name('borrowing.show');
 
 Route::get('/return', function () {
     return view('placeholder', ['title' => 'Return']);
