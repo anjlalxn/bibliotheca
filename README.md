@@ -6,6 +6,9 @@
 
 A Library Management System built with Laravel. It handles book records, borrowing, returns, and a dashboard with live stats and charts.
 
+### Bibliotheca UI & Figma
+Find the Figma link given to the group privately. To access HTML and CSS files, go to repositories, and find bibliothecaUI.
+
 ## Tech Stack
 
 - PHP / Laravel (Blade templating)
