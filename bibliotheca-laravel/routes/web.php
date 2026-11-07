@@ -14,9 +14,11 @@ Route::get('/login', function () {
 Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
 // Placeholder pages so every nav link works.
-Route::get('/books', function () {
-    return view('placeholder', ['title' => 'Books']);
-})->name('books');
+use App\Http\Controllers\BookController;
+
+Route::get('/books', [BookController::class, 'index'])->name('books');
+Route::post('/books', [BookController::class, 'store'])->name('books.store');
+Route::delete('/books/{book}', [BookController::class, 'destroy'])->name('books.destroy');
 
 Route::get('/borrowing', function () {
     return view('placeholder', ['title' => 'Borrowing']);
@@ -37,3 +39,4 @@ Route::get('/categories', function () {
 Route::get('/analytics', function () {
     return view('placeholder', ['title' => 'Analytics']);
 })->name('analytics');
+
