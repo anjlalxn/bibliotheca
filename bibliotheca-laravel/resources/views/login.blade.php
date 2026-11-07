@@ -26,6 +26,7 @@
                 <h1 class="brand-name">bibliotheca</h1>
                 <p class="brand-tagline">
                     modern library management system for community development
+                    (login not working yet pls skip to dashboard for now)
                 </p>
             </div>
 

@@ -68,6 +68,28 @@ h1, h2, h3, h4, h5, h6,
     font-family: var(--font-heading);
 }
 
+.btn, input {
+  border-radius: 0.89rem !important;
+}
+
+input{
+    margin-right: 10px !important;
+}
+
+.pagination {
+    --bs-pagination-color: var(--color-primary-dark);
+    --bs-pagination-hover-color: var(--color-primary-dark);
+    --bs-pagination-hover-bg: var(--color-primary-light);
+    --bs-pagination-hover-border-color: var(--color-primary-light);
+    --bs-pagination-focus-color: var(--color-primary-dark);
+    --bs-pagination-focus-bg: var(--color-primary-light);
+    --bs-pagination-focus-box-shadow: 0 0 0 0.2rem rgba(13, 202, 240, 0.25);
+
+    --bs-pagination-active-bg: var(--color-primary);
+    --bs-pagination-active-border-color: var(--color-primary);
+    --bs-pagination-active-color: var(--color-white);
+}
+
 /* ==========================================================
    Login page
    ========================================================== */
