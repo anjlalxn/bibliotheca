@@ -84,6 +84,8 @@ input{
     --bs-pagination-focus-color: var(--color-primary-dark);
     --bs-pagination-focus-bg: var(--color-primary-light);
     --bs-pagination-focus-box-shadow: 0 0 0 0.2rem rgba(13, 202, 240, 0.25);
+    --bs-pagination-border-radius: 1rem;
+    --bs-pagination-padding: 1rem;
 
     --bs-pagination-active-bg: var(--color-primary);
     --bs-pagination-active-border-color: var(--color-primary);

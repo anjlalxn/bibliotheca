@@ -10,6 +10,14 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
     <link href="{{ asset('style.css') }}" rel="stylesheet">
+    <style>
+        /* Book preview panel cover */
+        .bk-cover { width: 170px; aspect-ratio: 2 / 3; margin: 0 auto 1.5rem; border-radius: .5rem; overflow: hidden; background: #e9f7fb; }
+        .bk-cover img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .bk-cover-fallback { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 3.75rem; color: #0dcaf0; }
+        .bk-cover.is-loading .bk-cover-fallback { animation: bk-pulse 1.2s ease-in-out infinite; }
+        @keyframes bk-pulse { 50% { opacity: .45; } }
+    </style>
 </head>
 <body>
 
@@ -99,7 +107,7 @@
                     <div class="d-flex flex-column-reverse flex-sm-row justify-content-between align-items-sm-center gap-3">
                         <div class="search-toolbar d-flex align-items-center gap-2">
                             <form class="search-group input-group" action="{{ route('books') }}" method="GET" role="search">
-                                <input type="search" class="form-control" name="search" value="{{ request('search') }}" placeholder="Search..." aria-label="Search books">
+                                <input type="search" class="form-control" name="search" value="{{ request('search') }}" placeholder="Author/Category/Book" aria-label="Search books">
                                 <button class="btn btn-info text-white" type="submit">
                                     <i class="bi bi-search me-1"></i> Search
                                 </button>
@@ -131,16 +139,27 @@
                             </thead>
                             <tbody>
                                 @forelse ($books as $book)
+                                    @php
+                                        $isAvailable = $book->available_quantity > 0
+                                            && strtolower((string) $book->status) === 'available';
+                                        $year = $book->publication_year ?: 'Unknown Year';
+                                    @endphp
                                     <tr>
                                         <td>BOOK-{{ $book->book_id }}</td>
                                         <td>{{ $book->category->category_name ?? '—' }}</td>
                                         <td>{{ $book->title }}</td>
                                         <td>{{ $book->author }}</td>
                                         <td>{{ $book->publisher }}</td>
-                                        <td>{{ $book->publication_year }}</td>
+                                        <td>{{ $year }}</td>
                                         <td>{{ $book->quantity }}</td>
                                         <td>{{ $book->available_quantity }}</td>
-                                        <td>{{ $book->status }}</td>
+                                        <td>
+                                            @if ($isAvailable)
+                                                <span class="badge text-bg-success">Available</span>
+                                            @else
+                                                <span class="badge text-bg-danger">Unavailable</span>
+                                            @endif
+                                        </td>
                                         <td class="text-nowrap">
                                             <button type="button" class="btn btn-sm btn-outline-primary view-btn"
                                                 data-bs-toggle="offcanvas" data-bs-target="#viewBook"
@@ -148,10 +167,10 @@
                                                 data-title="{{ $book->title }}"
                                                 data-author="{{ $book->author }}"
                                                 data-publisher="{{ $book->publisher }}"
-                                                data-year="{{ $book->publication_year }}"
+                                                data-year="{{ $year }}"
                                                 data-qty="{{ $book->quantity }}"
                                                 data-category="{{ $book->category->category_name ?? '—' }}"
-                                                data-status="{{ $book->status }} ({{ $book->available_quantity }} copies)"
+                                                data-status="{{ $isAvailable ? 'Available' : 'Unavailable' }} ({{ $book->available_quantity }} copies)"
                                                 aria-label="View">
                                                 <i class="bi bi-eye"></i>
                                             </button>
@@ -169,7 +188,11 @@
                                     <tr>
                                         <td colspan="10" class="table-empty">
                                             <i class="bi bi-inbox"></i>
-                                            No books found.
+                                            @if (request('search'))
+                                                No author, category, or books match "{{ request('search') }}".
+                                            @else
+                                                No books to display yet.
+                                            @endif
                                         </td>
                                     </tr>
                                 @endforelse
@@ -177,7 +200,10 @@
                         </table>
                     </div>
 
-                    {{ $books->links() }}
+                    <!-- Page links -->
+                    <div class="mt-3">
+                        {{ $books->links() }}
+                    </div>
                 </section>
 
             </main>
@@ -185,7 +211,8 @@
     </div>
 
     <!-- Add Book modal -->
-    <div class="modal fade" id="addBook" tabindex="-1" aria-hidden="true">
+    <div class="modal fade" id="addBook" tabindex="-1" aria-hidden="true"
+         data-show-on-load="{{ $errors->any() ? '1' : '0' }}">
         <div class="modal-dialog modal-lg modal-dialog-centered">
             <form method="POST" action="{{ route('books.store') }}" class="modal-content p-3">
                 @csrf
@@ -259,36 +286,104 @@
         <div class="offcanvas-header">
             <div>
                 <h6 class="m-0" id="v-id"></h6>
-                <small id="v-title"></small>
+                <h3 id="v-title" class="text-info"></h3>
             </div>
             <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
         </div>
         <div class="offcanvas-body">
+            <div class="bk-cover" id="v-cover-box">
+                <img id="v-cover" alt="Book cover" hidden>
+                <div id="v-cover-fallback" class="bk-cover-fallback"><i class="bi bi-book"></i></div>
+            </div>
+
             <dl>
                 <dt>Author</dt><dd id="v-author"></dd>
                 <dt>Publisher</dt><dd id="v-publisher"></dd>
                 <dt>Publication Date</dt><dd id="v-year"></dd>
                 <dt>Quantity</dt><dd id="v-qty"></dd>
                 <dt>Category</dt><dd id="v-category"></dd>
-                <dt>Status</dt><dd id="v-status" class="text-success fw-bold"></dd>
+                <dt>Status</dt><dd id="v-status" class="fw-bold"></dd>
             </dl>
         </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+        // Re-open the Add Book modal if validation failed
+        const addModal = document.getElementById('addBook');
+        if (addModal.dataset.showOnLoad === '1') {
+            new bootstrap.Modal(addModal).show();
+        }
+
+        // ----- Book preview panel -----
+        const coverBox = document.getElementById('v-cover-box');
+        const coverImg = document.getElementById('v-cover');
+        const coverFallback = document.getElementById('v-cover-fallback');
+        const coverCache = new Map();
+        let latestRequest = 0;
+
+        function showCover(url) {
+            coverBox.classList.remove('is-loading');
+            if (url) {
+                coverImg.src = url;
+                coverImg.hidden = false;
+                coverFallback.hidden = true;
+            } else {
+                coverImg.hidden = true;
+                coverImg.removeAttribute('src');
+                coverFallback.hidden = false;
+            }
+        }
+
+        // If Open Library has no image, the URL 404s and we fall back to the icon
+        coverImg.addEventListener('error', () => showCover(null));
+
+        async function findCover(title, author) {
+            const key = title + '|' + author;
+            if (coverCache.has(key)) return coverCache.get(key);
+
+            let url = null;
+            // Try title + author first, then title only
+            const attempts = author ? [{ title, author }, { title }] : [{ title }];
+
+            for (const q of attempts) {
+                try {
+                    const params = new URLSearchParams({ ...q, limit: '1', fields: 'cover_i' });
+                    const res = await fetch('https://openlibrary.org/search.json?' + params);
+                    if (!res.ok) continue;
+                    const data = await res.json();
+                    const coverId = data.docs && data.docs[0] && data.docs[0].cover_i;
+                    if (coverId) {
+                        url = 'https://covers.openlibrary.org/b/id/' + coverId + '-L.jpg?default=false';
+                        break;
+                    }
+                } catch (e) { /* network error: use the fallback icon */ }
+            }
+
+            coverCache.set(key, url);
+            return url;
+        }
+
         document.querySelectorAll('.view-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
+            btn.addEventListener('click', async () => {
                 const d = btn.dataset;
-                ['id','title','author','publisher','year','qty','category','status'].forEach(k => {
+
+                ['id', 'title', 'author', 'publisher', 'year', 'qty', 'category', 'status'].forEach(k => {
                     document.getElementById('v-' + k).textContent = d[k] || '—';
                 });
+
+                const status = document.getElementById('v-status');
+                status.className = 'fw-bold ' + (d.status && d.status.startsWith('Available') ? 'text-success' : 'text-danger');
+
+                // Show the icon while the cover loads, then swap it in
+                showCover(null);
+                coverBox.classList.add('is-loading');
+                const request = ++latestRequest;
+
+                const url = await findCover(d.title, d.author);
+                if (request === latestRequest) showCover(url);
             });
         });
-
-        @if ($errors->any())
-            new bootstrap.Modal(document.getElementById('addBook')).show();
-        @endif
     </script>
 </body>
 </html>

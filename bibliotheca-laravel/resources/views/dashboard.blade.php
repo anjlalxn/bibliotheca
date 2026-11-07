@@ -71,19 +71,53 @@
             </div>
         </div>
     </div>
+    <!-- Books of the Day: Caches 5 books per user ID, resetting at midnight -->
+    @php
+        $booksOfTheDay = \Illuminate\Support\Facades\Cache::remember('books_of_the_day', now()->endOfDay(), function () {
+            return \App\Models\Book::where('status', 'available')->inRandomOrder()->take(5)->get();
+        });
+    @endphp
+
+    <!-- Books of the Day -->
+    <section class="section-block mt-4 mb-4">
+        <h2 class="section-title mb-3">Books of the Day</h2>
+        <div class="row row-cols-2 row-cols-md-3 row-cols-xl-5 g-3">
+            @foreach ($booksOfTheDay as $book)
+                <div class="col">
+                    <div class="card h-100 border book-day-card rounded-3 overflow-hidden" data-title="{{ $book->title }}" data-author="{{ $book->author }}">
+                        <div class="bg-light d-flex align-items-center justify-content-center border-bottom" style="aspect-ratio: 2/3;">
+                            <img class="book-cover-img w-100 h-100" style="object-fit: cover; display: none;" alt="{{ $book->title }}">
+                            <div class="book-cover-fallback">
+                                <i class="bi bi-book text-info fs-1"></i>
+                            </div>
+                        </div>
+                        <div class="card-body p-2 text-center d-flex flex-column justify-content-center">
+                            <h6 class="card-title mb-1 text-truncate" title="{{ $book->title }}">{{ $book->title }}</h6>
+                            <p class="card-text small text-muted mb-0 text-truncate" title="{{ $book->author }}">{{ $book->author }}</p>
+                        </div>
+                    </div>
+                </div>
+            @endforeach
+        </div>
+    </section>
 
     <!-- All Books -->
     <section class="section-block">
         <div class="d-flex flex-column-reverse flex-sm-row justify-content-between align-items-sm-center gap-3">
-            <form class="search-group input-group" action="{{ route('dashboard') }}" method="GET" role="search">
-                <input type="search" width="500px" class="form-control" name="search"
-                    value="{{ $search }}"
-                    placeholder="Author/Category/Book" aria-label="Search books">
-                <button class="btn btn-info text-white" type="submit">
-                    <i class="bi bi-search me-1"></i> Search
+            <div class="search-toolbar d-flex align-items-center gap-2">
+                <form class="search-group input-group" action="{{ route('dashboard') }}" method="GET" role="search">
+                    <input type="search" class="form-control" name="search" value="{{ $search ?? '' }}" placeholder="Author/Category/Book" aria-label="Search books">
+                    <button class="btn btn-info text-white" type="submit">
+                        <i class="bi bi-search me-1"></i> Search
+                    </button>
+                </form>
+                <button class="btn btn-filter" type="button" aria-label="Filter">
+                    <i class="bi bi-filter"></i>
                 </button>
-            </form>
-            <h2 class="section-title">All Books</h2>
+            </div>
+            <div class="text-sm-end">
+                <h2 class="section-title">All Books</h2>
+            </div>
         </div>
 
         <div class="table-responsive">
@@ -103,23 +137,21 @@
                 </thead>
                 <tbody>
                     @forelse ($books as $book)
+                        @php
+                            $isAvailable = $book->available_quantity > 0
+                                && strtolower((string) $book->status) === 'available';
+                        @endphp
                         <tr>
-                            <td>{{ $book->book_id }}</td>
-                            <td>{{ $book->category?->category_name ?? '-' }}</td>
+                            <td>BOOK-{{ $book->book_id }}</td>
+                            <td>{{ $book->category->category_name ?? '—' }}</td>
                             <td>{{ $book->title }}</td>
                             <td>{{ $book->author }}</td>
                             <td>{{ $book->publisher }}</td>
-                                    
-                            @if ($book->publication_year== 0)
-                                    <td>Unknown Year</td>
-                                    @else
-                                    <td>{{ $book->publication_year }}</td>
-                                    @endif
-
+                            <td>{{ $book->publication_year ?: 'Unknown Year' }}</td>
                             <td>{{ $book->quantity }}</td>
                             <td>{{ $book->available_quantity }}</td>
                             <td>
-                                @if ($book->available_quantity > 0)
+                                @if ($isAvailable)
                                     <span class="badge text-bg-success">Available</span>
                                 @else
                                     <span class="badge text-bg-danger">Unavailable</span>
@@ -130,7 +162,7 @@
                         <tr>
                             <td colspan="9" class="table-empty">
                                 <i class="bi bi-inbox"></i>
-                                @if ($search !== '')
+                                @if (isset($search) && $search !== '')
                                     No author, category, or books match "{{ $search }}".
                                 @else
                                     No books to display yet.
@@ -147,4 +179,53 @@
             {{ $books->links() }}
         </div>
     </section>
+
+    <!-- Book of the Day Image Loader Script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const coverCache = new Map();
+
+            async function findCover(title, author) {
+                const key = title + '|' + author;
+                if (coverCache.has(key)) return coverCache.get(key);
+
+                let url = null;
+                const attempts = author ? [{ title, author }, { title }] : [{ title }];
+
+                for (const q of attempts) {
+                    try {
+                        const params = new URLSearchParams({ ...q, limit: '1', fields: 'cover_i' });
+                        const res = await fetch('https://openlibrary.org/search.json?' + params);
+                        if (!res.ok) continue;
+                        const data = await res.json();
+                        const coverId = data.docs && data.docs[0] && data.docs[0].cover_i;
+                        if (coverId) {
+                            url = 'https://covers.openlibrary.org/b/id/' + coverId + '-M.jpg?default=false';
+                            break;
+                        }
+                    } catch (e) { /* Ignore network errors */ }
+                }
+
+                coverCache.set(key, url);
+                return url;
+            }
+
+            document.querySelectorAll('.book-day-card').forEach(async (card) => {
+                const title = card.dataset.title;
+                const author = card.dataset.author;
+                const img = card.querySelector('.book-cover-img');
+                const fallback = card.querySelector('.book-cover-fallback');
+
+                const url = await findCover(title, author);
+                if (url) {
+                    img.src = url;
+                    // Switch visibility only after image successfully loads
+                    img.onload = () => {
+                        img.style.display = 'block';
+                        fallback.style.display = 'none';
+                    };
+                }
+            });
+        });
+    </script>
 @endsection
