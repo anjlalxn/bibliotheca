@@ -493,17 +493,6 @@ The following book titles are included in the system's book catalog. These title
 - Agudeza y arte de ingenio, en que se explican todos los modos y differencias de conceptos, con ejemplares escogidos de
 - Geflügelte Worte
 
-## Data Source
-
-Open Library API: https://openlibrary.org/developers/api
-
-The titles above are taken from the book-title records in the database export. Some entries retain their original capitalization, spelling, language, and abbreviated title text as recorded in the database.
-
-Below is the book catalog grouped into subject and genre categories based on the titles in your database export. These are suggested groupings, not necessarily the exact category values stored in your database. Some books could reasonably fit more than one category.&#x20;
-
-results-2026-11-07-131849.pdf
-
-
 
 ## Book catalog by category
 
