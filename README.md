@@ -51,9 +51,11 @@ php artisan migrate
 php artisan serve
 ```
 
+# 414 Books from OpenLibrary API
 ## Book Data Import (Do Not Run)
 
-> **Please do not run these commands.** The `books` and `categories` tables were already populated. Running them again will add extra books and change the sample data we are using for testing.
+
+> **Please do not run these commands.** The `books` and `categories` tables were already populated. Running them again will add extra books and change the sample data we are using for testing. This is done to save time from manually creating dummy data.
 
 The commands are kept in the project only to show how the sample data was created:
 
@@ -62,6 +64,7 @@ The commands are kept in the project only to show how the sample data was create
 | `php artisan books:import` | Imports general books (fiction, science, history, technology, etc.) |
 | `php artisan books:import-filipino` | Imports Filipino-related books (literature, history, folklore, culture, etc.) |
 | `php artisan books:import-more` | Imports more general and educational books (psychology, art, programming, comics, IT, nursing, education, engineering) |
+| `php artisan books:import-kids-teens` | Imports books intended for younger audiences. |
 
 Files are located in `app/Console/Commands/`.
 
