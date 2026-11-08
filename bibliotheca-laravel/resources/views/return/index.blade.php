@@ -78,9 +78,16 @@
                     <i class="bi bi-search me-1"></i> Search
                 </button>
             </form>
-            <button class="btn btn-filter" type="button" aria-label="Filter">
+
+            <button class="btn btn-filter" type="button" data-bs-toggle="modal"
+                    data-bs-target="#filterModal" aria-label="Filter">
                 <i class="bi bi-filter"></i>
             </button>
+
+            @if (request()->hasAny(['status', 'from', 'to']))
+                <a href="{{ route('return', array_filter(['search' => request('search')])) }}"
+                   class="btn btn-sm btn-outline-secondary">Clear filters</a>
+            @endif
         </div>
         <div class="text-sm-end">
             <h2 class="section-title">Returns</h2>
@@ -148,4 +155,44 @@
 
     {{ $borrowings->links() }}
 </section>
+
+{{-- Filter modal --}}
+<div class="modal fade" id="filterModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <form method="GET" action="{{ route('return') }}" class="modal-content p-3">
+            <h5 class="mb-3">Filter returns</h5>
+
+            {{-- keep the current search when filtering --}}
+            <input type="hidden" name="search" value="{{ request('search') }}">
+
+            <div class="mb-3">
+                <label class="form-label">Status</label>
+                <select name="status" class="form-select">
+                    <option value="">All</option>
+                    <option value="borrowed"  @selected(request('status') === 'borrowed')>Borrowed (not yet due)</option>
+                    <option value="due_today" @selected(request('status') === 'due_today')>Due today</option>
+                    <option value="overdue"   @selected(request('status') === 'overdue')>Overdue</option>
+                    <option value="returned"  @selected(request('status') === 'returned')>Returned</option>
+                </select>
+            </div>
+
+            <div class="row g-3">
+                <div class="col-6">
+                    <label class="form-label">Borrowed from</label>
+                    <input type="date" name="from" value="{{ request('from') }}" class="form-control">
+                </div>
+                <div class="col-6">
+                    <label class="form-label">Borrowed to</label>
+                    <input type="date" name="to" value="{{ request('to') }}" class="form-control">
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-end gap-2 mt-4">
+                <button class="btn btn-info text-white">Apply</button>
+                <a href="{{ route('return') }}" class="btn btn-secondary">Reset</a>
+                <button type="button" class="btn btn-outline-danger" data-bs-dismiss="modal">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
 @endsection

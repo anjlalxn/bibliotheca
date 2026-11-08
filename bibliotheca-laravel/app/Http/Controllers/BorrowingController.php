@@ -125,4 +125,40 @@ class BorrowingController extends Controller
 
         return view('borrowing.show', compact('borrowing'));
     }
+
+    public function export(Request $request)
+{
+    $rows = Borrowing::with(['member', 'book'])
+        ->filter($request->query())
+        ->orderByDesc('borrowing_id')
+        ->get();
+
+    // stops Excel from running a cell that starts with = + - @ as a formula
+    $safe = fn ($v) => preg_match('/^[=+\-@]/', (string) $v) ? "'" . $v : $v;
+
+    return response()->streamDownload(function () use ($rows, $safe) {
+        $out = fopen('php://output', 'w');
+        fwrite($out, "\xEF\xBB\xBF"); // so Excel reads UTF-8 correctly
+
+        fputcsv($out, ['Transaction ID', 'Member Code', 'Member', 'Book',
+                       'Date Borrowed', 'Due Date', 'Return Date', 'Status']);
+
+        foreach ($rows as $b) {
+            fputcsv($out, [
+                'B-' . str_pad($b->borrowing_id, 3, '0', STR_PAD_LEFT),
+                $safe($b->member->member_code ?? ''),
+                $safe($b->member->full_name ?? ''),
+                $safe($b->book->title ?? ''),
+                $b->borrowing_date?->format('Y-m-d'),
+                $b->due_date?->format('Y-m-d'),
+                $b->return_date?->format('Y-m-d'),
+                $b->display_status,
+            ]);
+        }
+
+        fclose($out);
+    }, 'borrowings-' . today()->toDateString() . '.csv', [
+        'Content-Type' => 'text/csv; charset=UTF-8',
+    ]);
+}
 }
