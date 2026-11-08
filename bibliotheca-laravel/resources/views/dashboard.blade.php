@@ -40,7 +40,7 @@
                 </a>
             </div>
             <div class="col">
-                <a href="#" class="stat-card stat-card--black">
+                <a href="{{ route('return') }}" class="stat-card stat-card--black">
                     <i class="bi bi-exclamation-circle stat-icon"></i>
                     <div class="stat-body">
                         <p class="stat-label">Overdue Books</p>
@@ -50,7 +50,7 @@
                 </a>
             </div>
             <div class="col">
-                <a href="#" class="stat-card stat-card--dark-gray">
+                <a href="{{ route('borrowing') }}" class="stat-card stat-card--dark-gray">
                     <i class="bi bi-envelope-open stat-icon"></i>
                     <div class="stat-body">
                         <p class="stat-label">Transaction Details</p>
@@ -60,7 +60,7 @@
                 </a>
             </div>
             <div class="col">
-                <a href="#" class="stat-card stat-card--gray">
+                <a href="{{ route('borrowing') }}" class="stat-card stat-card--gray">
                     <i class="bi bi-clock-history stat-icon"></i>
                     <div class="stat-body">
                         <p class="stat-label">Borrow History</p>

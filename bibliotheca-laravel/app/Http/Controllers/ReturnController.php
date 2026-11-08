@@ -47,7 +47,7 @@ class ReturnController extends Controller
     public function store(Borrowing $borrowing)
     {
         // The return and the stock change are saved together or not at all
-        $result = DB::transaction(function () use ($borrowing) {
+        $error = DB::transaction(function () use ($borrowing) {
             $record = Borrowing::lockForUpdate()->findOrFail($borrowing->borrowing_id);
 
             if ($record->return_date) {
@@ -69,10 +69,10 @@ class ReturnController extends Controller
             return null;
         });
 
-        if ($result) {
-            return back()->with('error', $result);
+        if ($error) {
+            return redirect()->route('return')->with('return_error', $error);
         }
 
-        return back()->with('success', 'Book marked as returned.');
+        return redirect()->route('return')->with('return_success', 'Book marked as returned.');
     }
 }

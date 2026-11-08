@@ -4,9 +4,11 @@
 @section('heading', 'Return')
 
 @section('content')
-@if (session('success'))
-    <div class="alert alert-success">{{ session('success') }}</div>
-@endif
+@php
+    // Popup message (success or error), if any
+    $popupSuccess = session('return_success');
+    $popupError   = session('return_error');
+@endphp
 
 <div class="stat-panel">
     <div class="row row-cols-1 row-cols-sm-2 row-cols-xl-3 g-3">
@@ -122,11 +124,15 @@
                         </td>
                         <td class="text-nowrap">
                             @unless ($b->return_date)
-                                <form method="POST" action="{{ route('return.store', $b->borrowing_id) }}"
-                                      class="d-inline" onsubmit="return confirm('Mark this book as returned?')">
-                                    @csrf
-                                    <button class="btn btn-sm btn-success">Return</button>
-                                </form>
+                                <button type="button"
+                                        class="btn btn-sm btn-success return-btn"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#confirmReturn"
+                                        data-url="{{ route('return.store', $b->borrowing_id) }}"
+                                        data-book="{{ $b->book->title ?? '—' }}"
+                                        data-member="{{ $b->member->full_name ?? '—' }}">
+                                    Return
+                                </button>
                             @endunless
                             <a href="{{ route('borrowing.show', $b->borrowing_id) }}"
                                class="btn btn-sm btn-outline-primary" aria-label="View">
@@ -146,6 +152,101 @@
         </table>
     </div>
 
-    {{ $borrowings->links() }}
+    <div class="mt-3">
+        {{ $borrowings->links() }}
+    </div>
 </section>
+
+<!-- ====================================== -->
+<!-- RESULT POPUP (success / error)         -->
+<!-- ====================================== -->
+@if ($popupSuccess || $popupError)
+    <div class="modal fade" id="resultModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-sm">
+            <div class="modal-content text-center p-3">
+                <div class="modal-body">
+                    @if ($popupSuccess)
+                        <i class="bi bi-check-circle-fill text-success" style="font-size: 4rem;"></i>
+                        <h5 class="fw-bold mt-2">Success</h5>
+                        <p class="mb-0">{{ $popupSuccess }}</p>
+                    @else
+                        <i class="bi bi-exclamation-circle-fill text-danger" style="font-size: 4rem;"></i>
+                        <h5 class="fw-bold mt-2">Unable to continue</h5>
+                        <p class="mb-0">{{ $popupError }}</p>
+                    @endif
+                </div>
+                <div class="modal-footer border-0 justify-content-center">
+                    <button type="button"
+                            class="btn {{ $popupSuccess ? 'btn-info text-white' : 'btn-danger' }} px-4"
+                            data-bs-dismiss="modal">
+                        OK
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+@endif
+
+<!-- ====================================== -->
+<!-- CONFIRM RETURN MODAL                   -->
+<!-- ====================================== -->
+<div class="modal fade" id="confirmReturn" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header border-0">
+                <h5 class="modal-title fw-semibold">Confirm Return</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-2">Mark this book as returned?</p>
+                <p class="fw-semibold mb-1" id="returnBookTitle"></p>
+                <p class="text-muted mb-3">Borrowed by <span id="returnMemberName"></span></p>
+                <div class="alert alert-info mb-0">
+                    <i class="bi bi-info-circle me-1"></i>
+                    The return date will be recorded as today.
+                </div>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form id="confirmReturnForm" method="POST" action="">
+                    @csrf
+                    <button type="submit" class="btn btn-success" id="confirmReturnBtn">
+                        <i class="bi bi-check-circle me-1"></i> Confirm Return
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+
+        // Open the result popup (success / error) if there is one
+        const resultModal = document.getElementById('resultModal');
+        if (resultModal) {
+            bootstrap.Modal.getOrCreateInstance(resultModal).show();
+        }
+
+        // Fill the confirm return modal
+        const returnForm = document.getElementById('confirmReturnForm');
+        const returnBtn  = document.getElementById('confirmReturnBtn');
+        const bookTitle  = document.getElementById('returnBookTitle');
+        const memberName = document.getElementById('returnMemberName');
+
+        document.querySelectorAll('.return-btn').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                returnForm.action = this.dataset.url;
+                bookTitle.textContent = this.dataset.book || 'this book';
+                memberName.textContent = this.dataset.member || '—';
+                returnBtn.disabled = false;
+            });
+        });
+
+        // Prevent double submits
+        returnForm.addEventListener('submit', function () {
+            returnBtn.disabled = true;
+        });
+    });
+</script>
 @endsection

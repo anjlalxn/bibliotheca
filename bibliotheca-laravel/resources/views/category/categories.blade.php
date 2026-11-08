@@ -1,28 +1,14 @@
-@extends('layouts.app')
+@extends('layouts.panel')
 
 @section('title', 'Categories')
 @section('heading', 'Categories')
 
+@section('content')
 @php
     // True when the last submit was a failed EDIT, so the add form
     // doesn't get pre-filled with the edit form's old input.
     $editFailed = $errors->editCategory->any();
 @endphp
-
-@section('content')
-
-    <h1 class="page-title page-title--spaced">
-        Categories
-    </h1>
-
-    {{-- Success message (the layout only shows session('error')) --}}
-    @if (session('success'))
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            <i class="bi bi-check-circle me-1"></i>
-            {{ session('success') }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    @endif
 
     <!-- Stat Cards -->
     <div class="stat-panel">
@@ -81,6 +67,7 @@
 
             <div class="text-sm-end">
                 <h2 class="section-title">All Categories</h2>
+                <p class="section-subtitle">Click to view books in a category</p>
             </div>
 
         </div>
@@ -102,10 +89,22 @@
                     @forelse ($categories as $category)
                         <tr>
                             <td>CAT-{{ $category->category_id }}</td>
-                            <td>{{ $category->category_name }}</td>
+                            <td>
+                                <a href="{{ route('categories.show', $category->category_id) }}"
+                                   class="text-decoration-none fw-semibold">
+                                    {{ $category->category_name }}
+                                </a>
+                            </td>
                             <td>{{ $category->books_count }}</td>
 
                             <td class="text-nowrap">
+
+                                <!-- View Category Library -->
+                                <a href="{{ route('categories.show', $category->category_id) }}"
+                                   class="btn btn-sm btn-outline-primary"
+                                   aria-label="View category books">
+                                    <i class="bi bi-eye"></i>
+                                </a>
 
                                 <!-- Edit Category -->
                                 <button type="button"
@@ -164,7 +163,7 @@
          id="addCategory"
          tabindex="-1"
          aria-hidden="true"
-         data-show-on-load="{{ $errors->any() ? '1' : '0' }}">
+         data-show-on-load="{{ $errors->any() && ! $editFailed ? '1' : '0' }}">
 
         <div class="modal-dialog modal-dialog-centered">
             <form method="POST" action="{{ route('categories.store') }}" class="modal-content p-3">
@@ -180,7 +179,7 @@
 
                 <div class="modal-body">
 
-                    @if ($errors->any())
+                    @if ($errors->any() && ! $editFailed)
                         <div class="alert alert-danger">
                             <strong>
                                 <i class="bi bi-exclamation-circle me-1"></i>

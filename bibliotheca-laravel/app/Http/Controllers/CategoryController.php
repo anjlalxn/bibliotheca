@@ -23,6 +23,29 @@ class CategoryController extends Controller
         return view('category.categories', compact('categories', 'totalCategories'));
     }
 
+    public function show(Request $request, Category $category)
+    {
+        $search = trim((string) $request->query('search', ''));
+
+        $books = $category->books()
+            ->when($search !== '', function ($query) use ($search) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('title', 'like', "%{$search}%")
+                      ->orWhere('author', 'like', "%{$search}%");
+                });
+            })
+            ->orderBy('title')
+            ->paginate(15)
+            ->withQueryString();
+
+        $stats = [
+            'titles'    => $category->books()->count(),
+            'available' => $category->books()->where('available_quantity', '>', 0)->count(),
+        ];
+
+        return view('category.show', compact('category', 'books', 'stats'));
+    }
+
     public function store(Request $request)
     {
         $request->validate([

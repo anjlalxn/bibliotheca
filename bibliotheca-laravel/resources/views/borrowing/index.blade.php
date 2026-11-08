@@ -47,7 +47,7 @@
                 <i class="bi bi-book stat-icon"></i>
                 <div class="stat-body">
                     <p class="stat-label">Available Books</p>
-                    <p class="stat-value">{{ $stats['available'] }}</p>
+                    <p class="stat-value">{{ number_format($stats['available']) }}</p>
                 </div>
                 <i class="bi bi-chevron-right stat-arrow"></i>
             </a>

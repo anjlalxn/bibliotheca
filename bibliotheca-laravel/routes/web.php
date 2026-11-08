@@ -57,6 +57,7 @@ Route::middleware(['auth', NoCache::class])->group(function () {
     Route::post('/categories', [CategoryController::class, 'store'])->name('categories.store');
     Route::put('/categories/{category:category_id}', [CategoryController::class, 'update'])->name('categories.update');
     Route::delete('/categories/{category:category_id}', [CategoryController::class, 'destroy'])->name('categories.destroy');
+    Route::get('/categories/{category}', [CategoryController::class, 'show'])->name('categories.show');
 
     Route::get('/analytics', [AnalyticsController::class, 'index'])->name('analytics');
 

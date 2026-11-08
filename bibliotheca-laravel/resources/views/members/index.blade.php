@@ -52,6 +52,8 @@
         </div>
         <div class="text-sm-end">
             <h2 class="section-title">All Members</h2>
+            <p class="section-subtitle">Click to view member information</p>
+
         </div>
     </div>
 
