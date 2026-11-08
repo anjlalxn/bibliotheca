@@ -29,17 +29,20 @@
                     <li class="nav-item"><a href="{{ url('/dashboard') }}" class="nav-link {{ request()->routeIs('dashboard') ? 'active' : '' }}"><i class="bi bi-house"></i> Dashboard</a></li>
                     <li class="nav-item"><a href="{{ route('books') }}" class="nav-link {{ request()->routeIs('books*') ? 'active' : '' }}"><i class="bi bi-book"></i> Books</a></li>
                     <li class="nav-item"><a href="{{ route('borrowing') }}" class="nav-link {{ request()->routeIs('borrowing*') ? 'active' : '' }}"><i class="bi bi-clock"></i> Borrowing</a></li>
-                    <li class="nav-item"><a href="{{ url('/return') }}" class="nav-link"><i class="bi bi-arrow-repeat"></i> Return</a></li>
-                    <li class="nav-item"><a href="{{ url('/members') }}" class="nav-link"><i class="bi bi-person-circle"></i> Members</a></li>
-                    <li class="nav-item"><a href="{{ url('/categories') }}" class="nav-link"><i class="bi bi-tags"></i> Categories</a></li>
-                    <li class="nav-item"><a href="{{ url('/analytics') }}" class="nav-link"><i class="bi bi-graph-up"></i> Analytics</a></li>
+                    <li class="nav-item"><a href="{{ url('/return') }}" class="nav-link {{ request()->routeIs('return*') ? 'active' : '' }}"><i class="bi bi-arrow-repeat"></i> Return</a></li>
+                    <li class="nav-item"><a href="{{ url('/members') }}" class="nav-link {{ request()->routeIs('members*') ? 'active' : '' }}"><i class="bi bi-person-circle"></i> Members</a></li>
+                    <li class="nav-item"><a href="{{ url('/categories') }}" class="nav-link {{ request()->routeIs('categories*') ? 'active' : '' }}"><i class="bi bi-tags"></i> Categories</a></li>
+                    <li class="nav-item"><a href="{{ url('/analytics') }}" class="nav-link {{ request()->routeIs('analytics*') ? 'active' : '' }}"><i class="bi bi-graph-up"></i> Analytics</a></li>
                 </ul>
 
                 <div class="sidebar-footer mt-auto">
                     <div class="sidebar-user d-flex align-items-center gap-2">
-                        <i class="bi bi-person"></i> Administrator
+                        <i class="bi bi-person"></i> {{ auth()->user()->username }}
                     </div>
-                    <button type="button" class="btn btn-logout w-100">Logout</button>
+                    <form action="{{ route('logout') }}" method="POST">
+                        @csrf
+                        <button type="submit" class="btn btn-logout w-100">Logout</button>
+                    </form>
                 </div>
             </div>
         </aside>
@@ -58,8 +61,19 @@
             <main class="main-content">
                 <h1 class="page-title page-title--spaced">@yield('heading')</h1>
 
+                {{-- Session messages: shown once here for every page using this layout --}}
+                @if (session('success'))
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        <i class="bi bi-check-circle me-1"></i> {{ session('success') }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                @endif
+
                 @if (session('error'))
-                    <div class="alert alert-danger">{{ session('error') }}</div>
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        <i class="bi bi-exclamation-circle me-1"></i> {{ session('error') }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
                 @endif
 
                 @yield('content')

@@ -54,7 +54,7 @@ php artisan migrate
 php artisan serve
 ```
 
-# 491 Books from OpenLibrary API
+# 534 Books from OpenLibrary API
 ## Book Data Import (Do Not Run)
 
 
@@ -69,6 +69,7 @@ The commands are kept in the project only to show how the sample data was create
 | `php artisan books:import-more` | Imports more general and educational books (psychology, art, programming, comics, IT, nursing, education, engineering) |
 | `php artisan books:import-kids-teens` | Imports books intended for younger audiences. |
 | `php artisan books:import-reference` | Imports books (encyclopedias, dictionaries, almanacs, etc.) used for general information. |
+| `php artisan books:import-manga-comics` | Imports manga, comics, and other educational books. |
 
 Files are located in `app/Console/Commands/`.
 

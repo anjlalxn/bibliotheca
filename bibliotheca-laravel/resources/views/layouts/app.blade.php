@@ -65,9 +65,9 @@
                 <!-- User + logout (pinned to bottom) -->
                 <div class="sidebar-footer mt-auto">
                     <div class="sidebar-user d-flex align-items-center gap-2">
-                        <i class="bi bi-person"></i> Administrator
+                        <i class="bi bi-person"></i> {{ auth()->user()->username }}
                     </div>
-                    <form action="#" method="POST">
+                    <form action="{{ route('logout') }}" method="POST">
                         @csrf
                         <button type="submit" class="btn btn-logout w-100">Logout</button>
                     </form>

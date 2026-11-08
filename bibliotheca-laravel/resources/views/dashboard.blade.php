@@ -4,13 +4,13 @@
 
 @section('content')
     <h1 class="page-title">Dashboard</h1>
-    <p class="page-subtitle">Welcome, admin</p>
+    <p class="page-subtitle">Welcome, {{ auth()->user()->username }}</p>
 
     <!-- Stat cards -->
     <div class="stat-panel">
         <div class="row row-cols-1 row-cols-sm-2 row-cols-xl-3 g-3">
             <div class="col">
-                <a href="#" class="stat-card stat-card--teal">
+                <a href="{{ route('books') }}" class="stat-card stat-card--teal">
                     <i class="bi bi-bookshelf stat-icon"></i>
                     <div class="stat-body">
                         <p class="stat-label">Total Books (Copies)</p>
@@ -20,7 +20,7 @@
                 </a>
             </div>
             <div class="col">
-                <a href="#" class="stat-card stat-card--cyan">
+                <a href="{{ route('books') }}" class="stat-card stat-card--cyan">
                     <i class="bi bi-check-square stat-icon"></i>
                     <div class="stat-body">
                         <p class="stat-label">Available Books</p>
@@ -30,7 +30,7 @@
                 </a>
             </div>
             <div class="col">
-                <a href="#" class="stat-card stat-card--light">
+                <a href="{{ route('borrowing') }}" class="stat-card stat-card--light">
                     <i class="bi bi-clock stat-icon"></i>
                     <div class="stat-body">
                         <p class="stat-label">Active Borrowings</p>
@@ -111,9 +111,7 @@
                         <i class="bi bi-search me-1"></i> Search
                     </button>
                 </form>
-                <button class="btn btn-filter" type="button" aria-label="Filter">
-                    <i class="bi bi-filter"></i>
-                </button>
+              
             </div>
             <div class="text-sm-end">
                 <h2 class="section-title">All Books</h2>

@@ -100,6 +100,26 @@
                 @forelse ($borrowings as $b)
                     @php
                         $badge = ['Returned' => 'success', 'Overdue' => 'danger', 'Borrowed' => 'info'][$b->display_status];
+
+                        // Reminder email (opens a Gmail draft) for this borrowing
+                        $memberEmail = $b->member->email ?? null;
+                        $bookTitle   = $b->book->title ?? 'Unknown book';
+                        $dueText     = $b->due_date?->format('F j, Y') ?? '-';
+                        $isOverdue   = $b->display_status === 'Overdue';
+
+                        $remindSubject = $isOverdue ? 'Bibliotheca | Overdue book notice' : 'Bibliotheca | Reminder: your book is due soon';
+                        $remindBody = "Hello " . ($b->member->full_name ?? '') . ",\n\n"
+                            . ($isOverdue
+                                ? "The book \"{$bookTitle}\" was due on {$dueText} and has not been returned yet. Please return it as soon as you can."
+                                : "This is a reminder that the book \"{$bookTitle}\" is due on {$dueText}. Please return it on or before that date.")
+                            . "\n\nThank you.
+                           ";
+
+                        $remindLink = $memberEmail
+                            ? 'https://mail.google.com/mail/?view=cm&to=' . rawurlencode($memberEmail)
+                                . '&su=' . rawurlencode($remindSubject)
+                                . '&body=' . rawurlencode($remindBody)
+                            : '#';
                     @endphp
                     <tr>
                         <td>
@@ -115,6 +135,16 @@
                                class="btn btn-sm btn-outline-primary" aria-label="View">
                                 <i class="bi bi-eye"></i>
                             </a>
+
+                            @if ($b->display_status !== 'Returned')
+                                <a href="{{ $remindLink }}"
+                                   target="_blank"
+                                   class="btn btn-sm btn-outline-warning remind-bell {{ $remindLink === '#' ? 'disabled' : '' }}"
+                                   data-key="reminded-borrowing-{{ $b->borrowing_id }}-{{ $b->display_status }}"                                   title="{{ $memberEmail ? 'Email a reminder to the member' : 'This member has no email' }}"
+                                   aria-label="Send reminder">
+                                    <i class="bi bi-bell"></i>
+                                </a>
+                            @endif
                         </td>
                     </tr>
                 @empty
@@ -131,4 +161,6 @@
 
     {{ $borrowings->links() }}
 </section>
+
+
 @endsection

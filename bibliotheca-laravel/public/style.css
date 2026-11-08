@@ -92,6 +92,39 @@ input{
     --bs-pagination-active-color: var(--color-white);
 }
 
+/* ==========================================
+   THIN TEAL SCROLLBAR
+   ========================================== */
+
+/* Firefox */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-primary, #0dcaf0) transparent;
+}
+
+/* WebKit (Chrome, Edge, Safari) */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background-color: var(--color-primary, #0dcaf0);
+    border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background-color: var(--color-teal-dark, #0aa2c0);
+}
+
+::-webkit-scrollbar-corner {
+    background: transparent;
+}
+
 /* ==========================================================
    Login page
    ========================================================== */

@@ -17,7 +17,15 @@
                 <h2 class="text-success fw-bold">SUCCESS</h2>
                 <p class="small text-muted">Transaction has been successfully completed.</p>
             @else
-                <i class="bi bi-journal-text text-info" style="font-size: 7rem;"></i>
+                <div id="book-cover-box"
+                     data-title="{{ $borrowing->book->title ?? '' }}"
+                     data-author="{{ $borrowing->book->author ?? '' }}">
+                    <img id="book-cover-img"
+                         alt="{{ $borrowing->book->title ?? 'Book cover' }}"
+                         class="rounded mb-2"
+                         style="display: none; max-height: 260px; max-width: 100%; object-fit: contain;">
+                    <i id="book-cover-fallback" class="bi bi-journal-text text-info" style="font-size: 7rem;"></i>
+                </div>
                 <h2 class="fw-bold">
                     <span class="badge text-bg-{{ $badge }}">{{ $borrowing->display_status }}</span>
                 </h2>
@@ -59,4 +67,42 @@
         </div>
     </div>
 </div>
+
+@unless (session('created'))
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const box = document.getElementById('book-cover-box');
+            if (!box) return;
+
+            const title = box.dataset.title;
+            const author = box.dataset.author;
+            const img = document.getElementById('book-cover-img');
+            const fallback = document.getElementById('book-cover-fallback');
+
+            // Try title + author first, then title only
+            const attempts = author ? [{ title, author }, { title }] : [{ title }];
+
+            for (const q of attempts) {
+                try {
+                    const params = new URLSearchParams({ ...q, limit: '1', fields: 'cover_i' });
+                    const res = await fetch('https://openlibrary.org/search.json?' + params);
+                    if (!res.ok) continue;
+
+                    const data = await res.json();
+                    const coverId = data.docs && data.docs[0] && data.docs[0].cover_i;
+
+                    if (coverId) {
+                        // Swap only after the image has actually loaded
+                        img.onload = () => {
+                            img.style.display = 'inline-block';
+                            fallback.style.display = 'none';
+                        };
+                        img.src = 'https://covers.openlibrary.org/b/id/' + coverId + '-L.jpg?default=false';
+                        break;
+                    }
+                } catch (e) { /* ignore network errors, keep the icon */ }
+            }
+        });
+    </script>
+@endunless
 @endsection

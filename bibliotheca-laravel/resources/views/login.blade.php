@@ -20,13 +20,12 @@
 
             <div class="col-md-6 brand-panel d-flex flex-column align-items-center justify-content-center text-center">
                 <div class="logo-placeholder d-flex align-items-center justify-content-center">
-            <img src="{{ asset('images/logo_index.png') }}" alt="Bibliotheca" class="img-fluid">               
- </div>
+                    <img src="{{ asset('images/logo_index.png') }}" alt="Bibliotheca" class="img-fluid">
+                </div>
 
                 <h1 class="brand-name">bibliotheca</h1>
                 <p class="brand-tagline">
                     modern library management system for community development
-                    (login not working yet pls skip to dashboard for now)
                 </p>
             </div>
 
@@ -38,11 +37,21 @@
                         <p class="auth-subtitle">Enter your admin account</p>
                     </div>
 
-                    <form action="#" method="POST">
+                    @if ($errors->any())
+                        <div class="alert alert-danger py-2" role="alert">
+                            {{ $errors->first() }}
+                        </div>
+                    @endif
+
+                    <form action="{{ route('login.attempt') }}" method="POST">
+                        @csrf
 
                         <div class="mb-3">
                             <label for="username" class="form-label">Username</label>
-                            <input type="text" class="form-control" id="username" name="username"
+                            <input type="text"
+                                class="form-control @error('username') is-invalid @enderror"
+                                id="username" name="username"
+                                value="{{ old('username') }}"
                                 placeholder="Enter username" required autofocus>
                         </div>
 
