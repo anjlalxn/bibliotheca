@@ -47,15 +47,21 @@
 
             <div id="availBox" class="alert alert-secondary py-2 mt-2 mb-3">Select a book to see availability.</div>
 
+            <label class="form-label">Number of copies</label>
+            <input type="number" name="quantity" id="quantity" class="form-control mb-3"
+                   min="1" max="{{ $maxCopies }}" value="{{ old('quantity', 1) }}" required>
+
             <div class="row g-3">
                 <div class="col-6">
                     <label class="form-label">Borrow Date</label>
                     <input type="date" name="borrowing_date" id="borrowDate" class="form-control"
+                           min="{{ now()->toDateString() }}"
                            value="{{ old('borrowing_date', now()->toDateString()) }}" required>
                 </div>
                 <div class="col-6">
                     <label class="form-label">Due Date</label>
                     <input type="date" name="due_date" id="dueDate" class="form-control"
+                           min="{{ now()->toDateString() }}"
                            value="{{ old('due_date', now()->addDays($loanDays)->toDateString()) }}" required>
                 </div>
             </div>
@@ -77,6 +83,7 @@
                 <div id="sumAuthor"></div>
                 <div id="sumCategory"></div>
                 <div id="sumYear"></div>
+                <div>Copies: <span id="sumQty">1</span></div>
             </div>
 
             <div class="row">
@@ -102,7 +109,8 @@
 
 @push('scripts')
 <script>
-    const loanDays = {{ $loanDays }};
+    const loanDays  = {{ $loanDays }};
+    const maxCopies = {{ $maxCopies }};
     const $ = id => document.getElementById(id);
     const findOpt = (listId, val) =>
         [...document.querySelectorAll('#' + listId + ' option')].find(o => o.value === val);
@@ -126,26 +134,38 @@
         $('sumCategory').textContent = b ? b.dataset.category : '';
         $('sumYear').textContent = b ? b.dataset.year : '';
 
+        const avail = b ? Number(b.dataset.avail) : 0;
+        const qty = parseInt($('quantity').value, 10) || 0;
+        const limit = b ? Math.min(avail, maxCopies) : maxCopies;
+
+        // the number of copies can't go above what's available
+        $('quantity').max = Math.max(limit, 1);
+        $('sumQty').textContent = qty || '—';
+
         const box = $('availBox');
         if (!b) {
             box.className = 'alert alert-secondary py-2 mt-2 mb-3';
             box.textContent = 'Select a book to see availability.';
-        } else if (Number(b.dataset.avail) > 0) {
-            box.className = 'alert alert-success py-2 mt-2 mb-3';
-            box.textContent = b.dataset.avail + ' copies available';
-        } else {
+        } else if (avail <= 0) {
             box.className = 'alert alert-danger py-2 mt-2 mb-3';
             box.textContent = 'No copies available';
+        } else if (qty > avail) {
+            box.className = 'alert alert-warning py-2 mt-2 mb-3';
+            box.textContent = 'Only ' + avail + ' copies available';
+        } else {
+            box.className = 'alert alert-success py-2 mt-2 mb-3';
+            box.textContent = avail + ' copies available';
         }
 
         $('sumBorrow').textContent = pretty($('borrowDate').value);
         $('sumDue').textContent = pretty($('dueDate').value);
 
-        $('confirmBtn').disabled = !(m && b && Number(b.dataset.avail) > 0);
+        $('confirmBtn').disabled = !(m && b && avail > 0 && qty >= 1 && qty <= limit);
     }
 
     $('memberInput').addEventListener('input', refresh);
     $('bookInput').addEventListener('input', refresh);
+    $('quantity').addEventListener('input', refresh);
     $('dueDate').addEventListener('change', refresh);
 
     // changing the borrow date moves the due date to borrow date + loan days

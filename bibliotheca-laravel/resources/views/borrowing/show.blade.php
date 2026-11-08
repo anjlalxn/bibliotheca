@@ -5,7 +5,8 @@
 
 @section('content')
 @php
-    $tid = 'B-' . str_pad($borrowing->borrowing_id, 3, '0', STR_PAD_LEFT);
+    $ids   = session('created_ids', [$borrowing->borrowing_id]);
+    $tids  = collect($ids)->map(fn ($id) => 'B-' . str_pad($id, 3, '0', STR_PAD_LEFT));
     $badge = ['Returned' => 'success', 'Overdue' => 'danger', 'Borrowed' => 'info'][$borrowing->display_status];
 @endphp
 
@@ -33,8 +34,12 @@
         </div>
 
         <div class="col-md-7">
-            <h5 class="text-info">Borrow Transaction ID: {{ $tid }}</h5>
-
+            <h5 class="text-info"> 
+                Borrow Transaction ID{{ $tids->count() > 1 ? 's' : '' }}: {{ $tids->join(', ') }}
+            </h5>
+            @if ($tids->count() > 1)
+                <div class="text-muted small">{{ $tids->count() }} copies borrowed</div>
+            @endif
             <div class="fw-semibold mt-3">Member</div>
             <div>{{ $borrowing->member->full_name ?? '—' }}</div>
             <div>Member Code: {{ $borrowing->member->member_code ?? '—' }}</div>
