@@ -4,9 +4,11 @@
 @section('heading', 'Return')
 
 @section('content')
-@if (session('success'))
-    <div class="alert alert-success">{{ session('success') }}</div>
-@endif
+@php
+    // Popup message (success or error), if any
+    $popupSuccess = session('return_success');
+    $popupError   = session('return_error');
+@endphp
 
 <div class="stat-panel">
     <div class="row row-cols-1 row-cols-sm-2 row-cols-xl-3 g-3">
@@ -129,11 +131,15 @@
                         </td>
                         <td class="text-nowrap">
                             @unless ($b->return_date)
-                                <form method="POST" action="{{ route('return.store', $b->borrowing_id) }}"
-                                      class="d-inline" onsubmit="return confirm('Mark this book as returned?')">
-                                    @csrf
-                                    <button class="btn btn-sm btn-success">Return</button>
-                                </form>
+                                <button type="button"
+                                        class="btn btn-sm btn-success return-btn"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#confirmReturn"
+                                        data-url="{{ route('return.store', $b->borrowing_id) }}"
+                                        data-book="{{ $b->book->title ?? '—' }}"
+                                        data-member="{{ $b->member->full_name ?? '—' }}">
+                                    Return
+                                </button>
                             @endunless
                             <a href="{{ route('borrowing.show', $b->borrowing_id) }}"
                                class="btn btn-sm btn-outline-primary" aria-label="View">
@@ -153,7 +159,9 @@
         </table>
     </div>
 
-    {{ $borrowings->links() }}
+    <div class="mt-3">
+        {{ $borrowings->links() }}
+    </div>
 </section>
 
 {{-- Filter modal --}}
