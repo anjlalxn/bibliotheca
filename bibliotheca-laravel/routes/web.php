@@ -5,6 +5,7 @@ use App\Http\Controllers\BookController;
 use App\Http\Controllers\MemberController;
 use App\Http\Controllers\BorrowingController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\ReturnController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\AnalyticsController;
 use App\Http\Middleware\NoCache;
@@ -40,9 +41,9 @@ Route::middleware(['auth', NoCache::class])->group(function () {
     Route::get('/borrowing/{borrowing}', [BorrowingController::class, 'show'])->name('borrowing.show');
 
     // Placeholder pages so every nav link works.
-    Route::get('/return', function () {
-        return view('placeholder', ['title' => 'Return']);
-    })->name('return');
+
+    Route::get('/return', [ReturnController::class, 'index'])->name('return');
+    Route::post('/return/{borrowing}', [ReturnController::class, 'store'])->name('return.store');
 
     Route::get('/members', [MemberController::class, 'index'])->name('members');
     Route::post('/members', [MemberController::class, 'store'])->name('members.store');
