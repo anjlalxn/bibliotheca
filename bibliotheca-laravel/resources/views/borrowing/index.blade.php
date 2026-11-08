@@ -68,23 +68,28 @@
 <section class="section-block">
     <div class="d-flex flex-column-reverse flex-sm-row justify-content-between align-items-sm-center gap-3">
         <div class="search-toolbar d-flex align-items-center gap-2">
-            <form class="search-group input-group" action="{{ route('borrowing') }}" method="GET" role="search">
-                <input type="search" class="form-control" name="search" value="{{ request('search') }}" placeholder="Search..." aria-label="Search borrowings">
-                <button class="btn btn-info text-white" type="submit">
-                    <i class="bi bi-search me-1"></i> Search
-                </button>
-            </form>
+    <form class="search-group input-group" action="{{ route('borrowing') }}" method="GET" role="search">
+        <input type="search" class="form-control" name="search" value="{{ request('search') }}" placeholder="Search..." aria-label="Search borrowings">
+        <button class="btn btn-info text-white" type="submit">
+            <i class="bi bi-search me-1"></i> Search
+        </button>
+    </form>
 
-            <button class="btn btn-filter" type="button" data-bs-toggle="modal"
-                    data-bs-target="#filterModal" aria-label="Filter">
-                <i class="bi bi-filter"></i>
-            </button>
+    <button class="btn btn-filter" type="button" data-bs-toggle="modal"
+            data-bs-target="#filterModal" aria-label="Filter">
+        <i class="bi bi-filter"></i>
+    </button>
 
-            @if (request()->hasAny(['status', 'from', 'to']))
-                <a href="{{ route('borrowing', array_filter(['search' => request('search')])) }}"
-                   class="btn btn-sm btn-outline-secondary">Clear filters</a>
-            @endif
-        </div>
+    <a href="{{ route('borrowing.export', request()->query()) }}"
+       class="btn btn-sm btn-outline-secondary" title="Download as CSV">
+        <i class="bi bi-download"></i> Export
+    </a>
+
+    @if (request()->hasAny(['status', 'from', 'to']))
+        <a href="{{ route('borrowing', array_filter(['search' => request('search')])) }}"
+           class="btn btn-sm btn-outline-secondary">Clear filters</a>
+    @endif
+</div>
         <div class="text-sm-end">
             <h2 class="section-title">Borrowing</h2>
             <p class="section-subtitle">Member Transactions</p>

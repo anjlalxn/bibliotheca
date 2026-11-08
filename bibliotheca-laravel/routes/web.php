@@ -35,6 +35,7 @@ Route::middleware(['auth', NoCache::class])->group(function () {
     Route::delete('/books/{book}', [BookController::class, 'destroy'])->name('books.destroy');
 
     // Borrowing
+    Route::get('/borrowing/export', [BorrowingController::class, 'export'])->name('borrowing.export');
     Route::get('/borrowing', [BorrowingController::class, 'index'])->name('borrowing');
     Route::get('/borrowing/create', [BorrowingController::class, 'create'])->name('borrowing.create');
     Route::post('/borrowing', [BorrowingController::class, 'store'])->name('borrowing.store');
