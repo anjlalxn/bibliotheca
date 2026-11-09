@@ -2,65 +2,141 @@
   <img src="https://i.postimg.cc/QNgXP3y1/Twitter-header-1-%282%29.png" alt="Bibliotheca" width="100%">
 </p>
 
-# Bibliotheca
+#  Bibliotheca – Library Management System (Advanced WebDev Course Final Project)
 
-A Library Management System built with Laravel. It handles book records, borrowing, returns, and a dashboard with live stats and charts.
+A web-based Library Management System developed using **Laravel**. Bibliotheca provides a centralized platform for managing book records, monitoring book availability, handling borrowing and returns, and viewing library statistics through an administrative dashboard.
 
-### Bibliotheca UI & Figma
-Find the Figma link given to the group privately. To access HTML and CSS files, go to repositories, and find bibliothecaUI.
+##  Features
 
-## Tech Stack
+- **Dashboard** – View library statistics, including book records, borrowing activity, and other library information through summary cards and charts.
+- **Book Management** – Add, view, edit, search, and delete book records.
+- **Category Management** – Organize books into categories for easier browsing and management.
+- **Borrowing Management** – Record and manage book borrowing transactions.
+- **Return Management** – Process returned books and update their availability.
+- **Inventory Tracking** – Monitor total book quantities and available copies.
+- **Search and Filtering** – Find book records more easily.
 
-- PHP / Laravel (Blade templating)
-- Bootstrap
-- Chart.js
-- MySQL-compatible database (TiDB Cloud)
+##  Technologies Used
 
-## Repository Rules
+| Technology | Purpose |
+|---|---|
+| PHP 8.2+ | Backend programming language |
+| Laravel | PHP web application framework |
+| MySQL / TiDB Cloud | Database management |
+| Blade | Laravel templating engine |
+| Bootstrap 5 | Frontend styling and responsive layout |
+| JavaScript | Client-side interactions |
+| Chart.js | Dashboard charts |
+| Open Library Search API | Source of sample book information |
 
-- ```main``` branch is the latest branch to work on, unless stated otherwise.
-- Do not push to main. Create a separate branch, and it will be later be merged there.
-- Follow branch naming ```yourname/your-feature``` to avoid confusions and determine who did which parts.
-- Double check sensitive files in your ```gitignore```. Do not push ```env``` and other private files.
+##  Requirements
 
+Before running the project, make sure you have installed:
 
-## Setup
+- PHP 8.2 or higher
+- Composer
+- Git
+- Beekeeper Studio (Viewer for DB) or access to the configured TiDB Cloud database
 
-Run these inside `bibliotheca-laravel`:
+**Note:** Node.js and npm are not required for the current version. Bootstrap 5 and Chart.js are loaded through CDN links.
+
+##  Installation and Setup
+
+### 1. Clone the Repository
+
+```bash
+git clone https://github.com/anjlalxn/bibliotheca.git
+```
+
+### 2. Open the Laravel Project
+
+Navigate to the Laravel application directory:
+
+```bash
+cd bibliotheca/bibliotheca-laravel
+```
+
+### 3. Install PHP Dependencies
 
 ```bash
 composer install
-npm install
-npm run build
+```
+
+### 4. Configure Environment Variables
+
+Create your local environment file:
+
+```bash
 cp .env.example .env
+```
+
+Open `.env` and configure the application and database credentials.
+
+```env
+APP_NAME=Bibliotheca
+APP_ENV=local
+APP_KEY=
+APP_DEBUG=true
+APP_URL=http://127.0.0.1:8000
+
+DB_CONNECTION=mysql
+DB_HOST=YOUR_DATABASE_HOST
+DB_PORT=4000
+DB_DATABASE=YOUR_DATABASE_NAME
+DB_USERNAME=YOUR_DATABASE_USERNAME
+DB_PASSWORD=YOUR_DATABASE_PASSWORD
+```
+
+Replace the database placeholders with the credentials provided for the project.
+
+**Important:** Keep your `.env` file private. Do not commit database credentials to GitHub.
+
+### 5. Generate the Application Key
+
+```bash
 php artisan key:generate
 ```
 
-Then set your database details in `.env` and run php artisan commands:
-
-```env
-DB_CONNECTION=mysql
-DB_HOST= PROVIDED CREDENTIALS HERE
-DB_PORT=4000
-DB_DATABASE=bibliotheca_DB
-DB_USERNAME= PROVIDED CREDENTIALS HERE
-DB_PASSWORD=PROVIDED CREDENTIALS HERE
-
-```
-
+### 6. Run the Application
 
 ```bash
-php artisan migrate
 php artisan serve
 ```
 
-# 534 Books from OpenLibrary API
-## Book Data Import (Do Not Run)
+Open the application in your browser:
 
+```text
+http://127.0.0.1:8000
+```
 
-> **Please do not run these commands.** The `books` and `categories` tables were already populated. Running them again will add extra books and change the sample data we are using for testing. This is done to save time from manually creating dummy data.
+## 🗄️ Database Information
 
-The commands are kept in the project only to show how the sample data was created:
+Bibliotheca uses a MySQL-compatible database hosted through TiDB Cloud.
+
+The project database contains the existing book and category records used for demonstration and testing.
+
+**Important:**
+- Use the provided database credentials.
+- The database has already been populated with sample records.
+- Do not run the sample data import commands again.
+- Do not run database migrations unless instructed by the project maintainers.
+
+## 📖 Sample Book Data
+
+The project uses the free **Open Library Search API** to retrieve sample bibliographic information, including:
+
+- Book titles
+- Authors
+- Publishers
+- Publication years
+
+Custom Laravel Artisan commands were developed to retrieve books from different Open Library subjects and store the results in the project's database.
+
+The API is used for the initial population of sample records. The application retrieves its book information from its own database during normal operation.
+
+### Sample Data Import Commands
+
+The following commands are included in the project for reference only.
 
 | Command | What it does |
 |---|---|
@@ -71,120 +147,46 @@ The commands are kept in the project only to show how the sample data was create
 | `php artisan books:import-reference` | Imports books (encyclopedias, dictionaries, almanacs, etc.) used for general information. |
 | `php artisan books:import-manga-comics` | Imports manga, comics, and other educational books. |
 
-Files are located in `app/Console/Commands/`.
 
-### How we did it
+**Do not execute these commands.** They are retained to document how the initial sample dataset was generated.
 
-1. **Source:** We used the free [Open Library Search API](https://openlibrary.org/dev/docs/api/search) to get real book titles, authors, publishers, and publication years.
-2. **Artisan commands:** Each command is a custom Laravel Artisan command that searches Open Library by subject (for example, `subject:psychology`).
-3. **Categories:** Each subject is saved as a row in the `categories` table, using `firstOrCreate` so categories are not duplicated.
-4. **Books:** Each result is saved to the `books` table under its category. Missing publisher or author values are set to `Unknown`.
-5. **Quantity:** `quantity` is a random number of copies, and `available_quantity` is set to the same value since no books are borrowed yet.
-6. **No duplicates:** `firstOrCreate` checks the title and author first, so running a command twice does not create the same book again.
-7. **API limits:** Each command only makes about 8 API requests (one per subject), waits 2 seconds between requests, and sends a `User-Agent` header with an app name and contact email, as Open Library requests.
-8. **One-time import:** The data is stored in our own database, so the system never calls Open Library while running.
+### Sample Data Disclaimer
 
-### Notes
+The book records are intended for academic demonstration and testing purposes. They do not represent actual library inventory.
 
-- This is sample data for our school project, not real library inventory.
-- Quantities are randomly generated.
-- Some books may have `Unknown` publishers or be placed in a slightly different category than expected.
+- Book quantities are randomly generated.
+- Some bibliographic information may be unavailable.
+- Missing authors or publishers may be represented as `Unknown`.
+- Book availability is maintained within the application's database.
 
----
+##  Project Structure
 
-## Requirements
-
-Before installing the project, make sure you have the following:
-
-- PHP 8.2 or newer
-- Composer
-- Git
-- Beekeeper Studio (to view DB) or access to a TiDB Cloud database credentials/dashboard
-- A code editor (VS Code or PhpStorm recommended)
-
-An internet connection is also needed to load externally hosted frontend resources through CDN links.
-
-
----
-
-## Installation and Setup
-
-### 1. Clone the Repository
-
-Open your terminal and navigate to your preferred project directory.
-
-```bash
-git clone https://github.com/anjlalxn/bibliotheca.git
+```text
+bibliotheca/
+│
+├── bibliotheca-laravel/
+│   ├── app/
+│   │   ├── Console/
+│   │   │   └── Commands/
+│   │   ├── Http/
+│   │   │   └── Controllers/
+│   │   └── Models/
+│   │
+│   ├── database/
+│   ├── public/
+│   ├── resources/
+│   │   └── views/
+│   ├── routes/
+│   ├── storage/
+│   ├── .env.example
+│   └── artisan
+│
+└── README.md
 ```
 
-Navigate into the Laravel application directory:
+##  License
 
-```bash
-cd bibliotheca/bibliotheca-laravel
-```
-
-### 2. Install Dependencies
-
-Install the PHP dependencies using Composer:
-
-```bash
-composer install
-```
-
-### 3. Configure the Environment
-
-Create your local environment configuration file:
-
-**Windows (Command Prompt):**
-
-```bash
-copy .env.example .env
-```
-
-**macOS / Linux:**
-
-```bash
-cp .env.example .env
-```
-
-Generate your Laravel application key:
-
-```bash
-php artisan key:generate
-```
-
-
----
-
-## Frontend Setup
-
-No additional frontend installation is necessary.
-
-The project uses:
-
-- **Bootstrap** for layouts, components, and responsive styling.
-- **Vanilla JavaScript** for client-side interactions.
-- **Blade templates** for rendering dynamic pages.
-
-Bootstrap resources are loaded through CDN links in the Blade layouts.
-
-There is no need to run `npm install`, `npm run dev`, or `npm run build` for the current setup.
-
----
-
-
-## Troubleshooting
-
-| Problem | Possible Solution |
-|---|---|
-| `composer` is not recognized | Install Composer and add it to your system PATH. |
-| `php` is not recognized | Install PHP and configure your system PATH. |
-| Database connection error | Check your database credentials and ensure the database server is running. |
-| Application key missing | Run `php artisan key:generate`. |
-| Missing dependencies | Run `composer install` inside `bibliotheca-laravel`. |
-| Tables do not exist | Check your database connection and run `php artisan migrate` if appropriate. |
-| Styles are not loading | Check your internet connection and CDN availability. |
-
+This project is intended for educational and academic purposes.
 ---
 
 ## Project Repository
