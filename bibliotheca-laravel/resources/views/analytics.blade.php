@@ -11,7 +11,6 @@
 
 <div class="analytics">
 
-    <h1 class="page-title page-title--spaced">Analytics</h1>
 
     
     <div class="stat-panel mb-4">
