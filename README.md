@@ -71,6 +71,9 @@ cp .env.example .env
 ```
 
 Open `.env` and configure the application and database credentials.
+### 2. Open the Laravel Project
+
+Navigate to the Laravel application directory:
 
 ```env
 APP_NAME=Bibliotheca
@@ -88,6 +91,7 @@ DB_PASSWORD=YOUR_DATABASE_PASSWORD
 
 MYSQL_ATTR_SSL_CA=YOUR_CERT_FILE_PATH
 
+### 3. Install PHP Dependencies
 
 ```
 
@@ -100,6 +104,77 @@ Replace the database placeholders with the credentials provided for the project.
 ```bash
 php artisan key:generate
 ```
+
+### 6. Run the Application
+
+```bash
+php artisan serve
+```
+
+Open the application in your browser:
+### 4. Configure Environment Variables
+
+Create your local environment file:
+
+```bash
+cp .env.example .env
+```
+
+Open `.env` and configure the application and database credentials.
+
+```env
+APP_NAME=Bibliotheca
+APP_ENV=local
+APP_KEY=
+APP_DEBUG=true
+APP_URL=http://127.0.0.1:8000
+
+DB_CONNECTION=mysql
+DB_HOST=YOUR_DATABASE_HOST
+DB_PORT=4000
+DB_DATABASE=YOUR_DATABASE_NAME
+DB_USERNAME=YOUR_DATABASE_USERNAME
+DB_PASSWORD=YOUR_DATABASE_PASSWORD
+```
+
+Replace the database placeholders with the credentials provided for the project.
+
+**Important:** Keep your `.env` file private. Do not commit database credentials to GitHub.
+
+### 5. Generate the Application Key
+
+```text
+http://127.0.0.1:8000
+```
+
+## 🗄️ Database Information
+
+Bibliotheca uses a MySQL-compatible database hosted through TiDB Cloud.
+
+The project database contains the existing book and category records used for demonstration and testing.
+
+**Important:**
+- Use the provided database credentials.
+- The database has already been populated with sample records.
+- Do not run the sample data import commands again.
+- Do not run database migrations unless instructed by the project maintainers.
+
+## 📖 Sample Book Data
+
+The project uses the free **Open Library Search API** to retrieve sample bibliographic information, including:
+
+- Book titles
+- Authors
+- Publishers
+- Publication years
+
+Custom Laravel Artisan commands were developed to retrieve books from different Open Library subjects and store the results in the project's database.
+
+The API is used for the initial population of sample records. The application retrieves its book information from its own database during normal operation.
+
+### Sample Data Import Commands
+
+The following commands are included in the project for reference only.
 
 ### 6. Run the Application
 
