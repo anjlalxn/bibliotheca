@@ -142,6 +142,16 @@ The project database already contains the existing book and category records use
 
 No database migration or sample data import is required for the existing project setup.
 
+### Why we used cloud
+Although we had been using XAMPP and its MariaDB / MySQL services throughout our previous course work, we decided to use TiDB Cloud for this project.
+
+While doing lab activities throughout the duration of the course we noticed some issues with the reliability of services in XAMPP. This was a problem due to the collaborative nature of this project and having multiple people using their own local database. We switched to a cloud platform to prevent unexpected database connection corruption.
+
+TiDB Cloud offered us a centralised database that could be accessed remotely. This made working collaboratively much easier as we were only using one database.
+
+TiDB is also compatible with MySQL so we could still apply our SQL skills and interact with the database as we are used to.
+
+
 ## Sample Book Data
 
 Bibliotheca uses the free **[Open Library Search API](https://openlibrary.org/developers/api)** to retrieve sample bibliographic information, including:
