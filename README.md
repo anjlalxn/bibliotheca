@@ -142,6 +142,16 @@ The project database already contains the existing book and category records use
 
 No database migration or sample data import is required for the existing project setup.
 
+### Why we used cloud
+Although we had been using XAMPP and its MariaDB / MySQL services throughout our previous course work, we decided to use TiDB Cloud for this project.
+
+While doing lab activities throughout the duration of the course we noticed some issues with the reliability of services in XAMPP. This was a problem due to the collaborative nature of this project and having multiple people using their own local database. We switched to a cloud platform to prevent unexpected database connection corruption.
+
+TiDB Cloud offered us a centralised database that could be accessed remotely. This made working collaboratively much easier as we were only using one database.
+
+TiDB is also compatible with MySQL so we could still apply our SQL skills and interact with the database as we are used to.
+
+
 ## Sample Book Data
 
 Bibliotheca uses the free **[Open Library Search API](https://openlibrary.org/developers/api)** to retrieve sample bibliographic information, including:
@@ -259,3 +269,24 @@ This project is intended for educational and academic purposes.
 ## Project Repository
 
 [GitHub – Bibliotheca](https://github.com/anjlalxn/bibliotheca)
+
+# Screenshots
+<img src="https://i.postimg.cc/nrXhLQMV/image.png" alt="Screenshot 1">
+
+<img src="https://i.postimg.cc/J0szhBtH/image.png" alt="Screenshot 2">
+
+<img src="https://i.postimg.cc/VNzsCh5F/image.png" alt="Screenshot 3">
+
+<img src="https://i.postimg.cc/QMjNTzHX/image.png" alt="Screenshot 4">
+
+<img src="https://i.postimg.cc/t4Q4XJbQ/image.png" alt="Screenshot 5">
+
+<img src="https://i.postimg.cc/L4G11HR4/image.png" alt="Screenshot 6">
+
+<img src="https://i.postimg.cc/7Ycmbvt4/image.png" alt="Screenshot 7">
+
+<img src="https://i.postimg.cc/tCf270v1/image.png" alt="Screenshot 8">
+
+<img src="https://i.postimg.cc/13qMqWbV/image.png" alt="Screenshot 9">
+
+<img src="https://i.postimg.cc/W1g63dJJ/image.png" alt="Screenshot 10">
