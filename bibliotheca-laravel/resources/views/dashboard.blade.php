@@ -49,7 +49,8 @@
             </a>
         </div>
         <div class="col">
-            <a href="{{ route('borrowing') }}" class="stat-card stat-card--dark-gray">
+            {{-- Opens the transaction search modal instead of going straight to Borrowing --}}
+            <a href="#" class="stat-card stat-card--dark-gray" data-bs-toggle="modal" data-bs-target="#transactionSearchModal">
                 <i class="bi bi-envelope-open stat-icon"></i>
                 <div class="stat-body">
                     <p class="stat-label">Transaction Details</p>
@@ -171,11 +172,45 @@ return \App\Models\Book::where('status', 'available')->inRandomOrder()->take(5)-
         </table>
     </div>
 
-    
+
     <div class="mt-3">
         {{ $books->links() }}
     </div>
 </section>
+
+
+{{-- Transaction search modal: sends the typed search to the Borrowing page (?search=...) --}}
+<div class="modal fade" id="transactionSearchModal" tabindex="-1" aria-labelledby="transactionSearchLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <form method="GET" action="{{ route('borrowing') }}" class="modal-content p-3" role="search">
+
+            <div class="modal-header border-0">
+                <div>
+                    <h5 class="modal-title fw-semibold" id="transactionSearchLabel">Find a Transaction</h5>
+                    <small class="text-muted">Search by member name, member code, or book title.</small>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <div class="modal-body">
+                <label for="transaction_search" class="form-label">Search</label>
+                <div class="input-group">
+                    <input type="search" id="transaction_search" name="search"
+                        class="form-control"
+                        placeholder="e.g. Juan Dela Cruz, MEM-001, Little Princess"
+                        maxlength="255" required autocomplete="off">
+                </div>
+            </div>
+
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-outline-danger" data-bs-dismiss="modal">Cancel</button>
+                <button type="submit" class="btn btn-info text-white">
+                    <i class="bi bi-search me-1"></i> Search
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
 
 @endsection
 

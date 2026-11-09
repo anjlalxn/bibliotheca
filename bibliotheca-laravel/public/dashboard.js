@@ -43,3 +43,13 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 });
+
+  // Put the cursor in the search box as soon as the modal opens
+    document.addEventListener('DOMContentLoaded', () => {
+        const modal = document.getElementById('transactionSearchModal');
+        if (!modal) return;
+
+        modal.addEventListener('shown.bs.modal', () => {
+            document.getElementById('transaction_search').focus();
+        });
+    });
