@@ -5,8 +5,28 @@
 
 @section('content')
 @php
-    $isActive = strtolower((string) $member->status) === 'active';
-    $badgeMap = ['Returned' => 'success', 'Overdue' => 'danger', 'Borrowed' => 'info'];
+$isActive = strtolower((string) $member->status) === 'active';
+$badgeMap = ['Returned' => 'success', 'Overdue' => 'danger', 'Borrowed' => 'info'];
+
+// Collapse copies borrowed in the SAME transaction (same book, same
+// borrow date, same due date, same status) into one card. Different
+// days/months or different statuses stay as separate cards.
+$grouped = $borrowings
+->groupBy(fn ($b) =>
+$b->book_id . '|' .
+optional($b->borrowing_date)->toDateString() . '|' .
+optional($b->due_date)->toDateString() . '|' .
+$b->display_status
+)
+->map(fn ($group) => (object) [
+'copies' => $group->count(),
+'borrowing_id' => $group->first()->borrowing_id,
+'book' => $group->first()->book,
+'display_status' => $group->first()->display_status,
+'borrowing_date' => $group->first()->borrowing_date,
+'due_date' => $group->first()->due_date,
+'return_date' => $group->first()->return_date,
+]);
 @endphp
 
 <!-- Member info -->
@@ -17,9 +37,9 @@
             <i class="bi bi-person-circle text-info" style="font-size: 6rem;"></i>
             <div>
                 @if ($isActive)
-                    <span class="badge text-bg-success fs-6">Active</span>
+                <span class="badge text-bg-success fs-6">Active</span>
                 @else
-                    <span class="badge text-bg-secondary fs-6">{{ ucfirst((string) $member->status) ?: 'Inactive' }}</span>
+                <span class="badge text-bg-secondary fs-6">{{ ucfirst((string) $member->status) ?: 'Inactive' }}</span>
                 @endif
             </div>
         </div>
@@ -59,8 +79,14 @@
                 </div>
             </div>
 
-            <div class="mt-4">
+            <!-- Updated Buttons Section -->
+            <div class="mt-4 d-flex gap-2">
                 <a href="{{ route('members') }}" class="btn btn-outline-info">Back to Members</a>
+                
+                <!-- New Pink Email Button -->
+                <a href="mailto:{{ $member->email }}" class="btn text-white" style="background-color: #e83e8c; border-color: #e83e8c;">
+                    <i class="bi bi-envelope-fill me-1"></i> Email Member
+                </a>
             </div>
         </div>
     </div>
@@ -70,102 +96,71 @@
 <section class="section-block">
     <h2 class="section-title mb-3">Borrowed Books</h2>
 
-    @if ($borrowings->isEmpty())
-        <div class="card p-4 text-center text-muted">
-            <i class="bi bi-inbox fs-1"></i>
-            <div>This member hasn't borrowed any books yet.</div>
-        </div>
+    @if ($grouped->isEmpty())
+    <div class="card p-4 text-center text-muted">
+        <i class="bi bi-inbox fs-1"></i>
+        <div>This member hasn't borrowed any books yet.</div>
+    </div>
     @else
-        <div class="row row-cols-2 row-cols-md-3 row-cols-xl-5 g-3">
-            @foreach ($borrowings as $borrowing)
-                @php
-                    $status = $borrowing->display_status;
-                @endphp
-                <div class="col">
-                    <a href="{{ route('borrowing.show', $borrowing->borrowing_id) }}"
-                       class="text-decoration-none text-reset">
-                        <div class="card h-100 border rounded-3 overflow-hidden member-book-card"
-                             data-title="{{ $borrowing->book->title ?? '' }}"
-                             data-author="{{ $borrowing->book->author ?? '' }}">
+    <div class="row row-cols-2 row-cols-md-3 row-cols-xl-5 g-3">
+        @foreach ($grouped as $entry)
+        @php
+        $status = $entry->display_status;
+        $badge = $badgeMap[$status] ?? 'secondary';
+        @endphp
+        <div class="col">
+            <a href="{{ route('borrowing.show', $entry->borrowing_id) }}"
+                class="text-decoration-none text-reset">
+                <div class="card h-100 border rounded-3 overflow-hidden member-book-card"
+                    data-title="{{ $entry->book->title ?? '' }}"
+                    data-author="{{ $entry->book->author ?? '' }}">
 
-                            <div class="bg-light d-flex align-items-center justify-content-center border-bottom"
-                                 style="aspect-ratio: 2/3;">
-                                <img class="book-cover-img w-100 h-100"
-                                     style="object-fit: cover; display: none;"
-                                     alt="{{ $borrowing->book->title ?? 'Book cover' }}">
-                                <div class="book-cover-fallback">
-                                    <i class="bi bi-book text-info fs-1"></i>
-                                </div>
-                            </div>
-
-                            <div class="card-body p-2 text-center">
-                                <h6 class="card-title mb-1 text-truncate" title="{{ $borrowing->book->title ?? '—' }}">
-                                    {{ $borrowing->book->title ?? '—' }}
-                                </h6>
-                                <p class="card-text small text-muted mb-1 text-truncate"
-                                   title="{{ $borrowing->book->author ?? '' }}">
-                                    {{ $borrowing->book->author ?? '' }}
-                                </p>
-                                <span class="badge text-bg-{{ $badgeMap[$status] ?? 'secondary' }}">{{ $status }}</span>
-                            </div>
+                    <div class="bg-light d-flex align-items-center justify-content-center border-bottom position-relative"
+                        style="aspect-ratio: 2/3;">
+                        <img class="book-cover-img w-100 h-100"
+                            style="object-fit: cover; display: none;"
+                            alt="{{ $entry->book->title ?? 'Book cover' }}">
+                        <div class="book-cover-fallback">
+                            <i class="bi bi-book text-info fs-1"></i>
                         </div>
-                    </a>
+
+                        @if ($entry->copies > 1)
+                        <span class="badge text-bg-dark position-absolute top-0 end-0 m-1">
+                            ×{{ $entry->copies }}
+                        </span>
+                        @endif
+                    </div>
+
+                    <div class="card-body p-2 text-center">
+                        <h6 class="card-title mb-1 text-truncate" title="{{ $entry->book->title ?? '—' }}">
+                            {{ $entry->book->title ?? '—' }}
+                        </h6>
+                        <p class="card-text small text-muted mb-1 text-truncate"
+                            title="{{ $entry->book->author ?? '' }}">
+                            {{ $entry->book->author ?? '' }}
+                        </p>
+
+                        <div class="small text-muted">
+                            <i class="bi bi-calendar-event me-1"></i>
+                            Borrowed {{ optional($entry->borrowing_date)->format('M j, Y') ?? '—' }}
+                        </div>
+                        <div class="small {{ $status === 'Overdue' ? 'text-danger' : 'text-muted' }}">
+                            <i class="bi bi-calendar-x me-1"></i>
+                            Due {{ optional($entry->due_date)->format('M j, Y') ?? '—' }}
+                        </div>
+
+                        <span class="badge text-bg-{{ $badge }} mt-2">{{ $status }}</span>
+                    </div>
                 </div>
-            @endforeach
+            </a>
         </div>
+        @endforeach
+    </div>
     @endif
 </section>
 
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const coverCache = new Map();
-
-        // Same Open Library lookup as the dashboard: title + author first, then title only
-        async function findCover(title, author) {
-            const key = title.trim().toLowerCase() + '|' + author.trim().toLowerCase();
-            if (coverCache.has(key)) return coverCache.get(key);
-
-            let url = null;
-            const attempts = author ? [{ title, author }, { title }] : [{ title }];
-
-            for (const q of attempts) {
-                try {
-                    const params = new URLSearchParams({ ...q, limit: '1', fields: 'cover_i' });
-                    const res = await fetch('https://openlibrary.org/search.json?' + params);
-                    if (!res.ok) continue;
-
-                    const data = await res.json();
-                    const coverId = data.docs && data.docs[0] && data.docs[0].cover_i;
-
-                    if (coverId) {
-                        url = 'https://covers.openlibrary.org/b/id/' + coverId + '-M.jpg?default=false';
-                        break;
-                    }
-                } catch (e) { /* ignore network errors, keep the icon */ }
-            }
-
-            coverCache.set(key, url);
-            return url;
-        }
-
-        document.querySelectorAll('.member-book-card').forEach(async function (card) {
-            const title = card.dataset.title;
-            if (!title) return;
-
-            const img = card.querySelector('.book-cover-img');
-            const fallback = card.querySelector('.book-cover-fallback');
-
-            const url = await findCover(title, card.dataset.author || '');
-
-            if (url) {
-                // Swap only after the image has actually loaded
-                img.onload = function () {
-                    img.style.display = 'block';
-                    fallback.style.display = 'none';
-                };
-                img.src = url;
-            }
-        });
-    });
-</script>
 @endsection
+
+@push('scripts')
+<script src="{{ asset('profile.js') }}"></script>
+@endpush

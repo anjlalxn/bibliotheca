@@ -68,28 +68,28 @@
 <section class="section-block">
     <div class="d-flex flex-column-reverse flex-sm-row justify-content-between align-items-sm-center gap-3">
         <div class="search-toolbar d-flex align-items-center gap-2">
-    <form class="search-group input-group" action="{{ route('borrowing') }}" method="GET" role="search">
-        <input type="search" class="form-control" name="search" value="{{ request('search') }}" placeholder="Search..." aria-label="Search borrowings">
-        <button class="btn btn-info text-white" type="submit">
-            <i class="bi bi-search me-1"></i> Search
-        </button>
-    </form>
+            <form class="search-group input-group" action="{{ route('borrowing') }}" method="GET" role="search">
+                <input type="search" class="form-control" name="search" value="{{ request('search') }}" placeholder="Search..." aria-label="Search borrowings">
+                <button class="btn btn-info text-white" type="submit">
+                    <i class="bi bi-search me-1"></i> Search
+                </button>
+            </form>
 
-    <button class="btn btn-filter" type="button" data-bs-toggle="modal"
-            data-bs-target="#filterModal" aria-label="Filter">
-        <i class="bi bi-filter"></i>
-    </button>
+            <button class="btn btn-filter" type="button" data-bs-toggle="modal"
+                data-bs-target="#filterModal" aria-label="Filter">
+                <i class="bi bi-filter"></i>
+            </button>
 
-    <a href="{{ route('borrowing.export', request()->query()) }}"
-       class="btn btn-sm btn-outline-secondary" title="Download as CSV">
-        <i class="bi bi-download"></i> Export
-    </a>
+            <a href="{{ route('borrowing.export', request()->query()) }}"
+                class="btn btn-sm btn-outline-secondary" title="Download as CSV">
+                <i class="bi bi-download"></i>
+            </a>
 
-    @if (request()->hasAny(['status', 'from', 'to']))
-        <a href="{{ route('borrowing', array_filter(['search' => request('search')])) }}"
-           class="btn btn-sm btn-outline-secondary">Clear filters</a>
-    @endif
-</div>
+            @if (request()->hasAny(['status', 'from', 'to']))
+            <a href="{{ route('borrowing', array_filter(['search' => request('search')])) }}"
+                class="btn btn-sm btn-outline-secondary">Clear filters</a>
+            @endif
+        </div>
         <div class="text-sm-end">
             <h2 class="section-title">Borrowing</h2>
             <p class="section-subtitle">Member Transactions</p>
@@ -110,66 +110,66 @@
             </thead>
             <tbody>
                 @forelse ($borrowings as $b)
-                    @php
-                        $badge = ['Returned' => 'success', 'Overdue' => 'danger', 'Borrowed' => 'info'][$b->display_status];
+                @php
+                $badge = ['Returned' => 'success', 'Overdue' => 'danger', 'Borrowed' => 'info'][$b->display_status];
 
-                        // Reminder email (opens a Gmail draft) for this borrowing
-                        $memberEmail = $b->member->email ?? null;
-                        $bookTitle   = $b->book->title ?? 'Unknown book';
-                        $dueText     = $b->due_date?->format('F j, Y') ?? '-';
-                        $isOverdue   = $b->display_status === 'Overdue';
+                // Reminder email (opens a Gmail draft) for this borrowing
+                $memberEmail = $b->member->email ?? null;
+                $bookTitle = $b->book->title ?? 'Unknown book';
+                $dueText = $b->due_date?->format('F j, Y') ?? '-';
+                $isOverdue = $b->display_status === 'Overdue';
 
-                        $remindSubject = $isOverdue
-                            ? 'Bibliotheca | Overdue book notice'
-                            : 'Bibliotheca | Reminder: your book is due soon';
+                $remindSubject = $isOverdue
+                ? 'Bibliotheca | Overdue book notice'
+                : 'Bibliotheca | Reminder: your book is due soon';
 
-                        $remindBody = "Hello " . ($b->member->full_name ?? '') . ",\n\n"
-                            . ($isOverdue
-                                ? "The book \"{$bookTitle}\" was due on {$dueText} and has not been returned yet. Please return it as soon as you can."
-                                : "This is a reminder that the book \"{$bookTitle}\" is due on {$dueText}. Please return it on or before that date.")
-                            . "\n\nThank you.\nBibliotheca";
+                $remindBody = "Hello " . ($b->member->full_name ?? '') . ",\n\n"
+                . ($isOverdue
+                ? "The book \"{$bookTitle}\" was due on {$dueText} and has not been returned yet. Please return it as soon as you can."
+                : "This is a reminder that the book \"{$bookTitle}\" is due on {$dueText}. Please return it on or before that date.")
+                . "\n\nThank you.\nBibliotheca";
 
-                        $remindLink = $memberEmail
-                            ? 'https://mail.google.com/mail/?view=cm&to=' . rawurlencode($memberEmail)
-                                . '&su=' . rawurlencode($remindSubject)
-                                . '&body=' . rawurlencode($remindBody)
-                            : '#';
-                    @endphp
-                    <tr>
-                        <td>
-                            {{ $b->member->full_name ?? '—' }}
-                            <div class="text-muted small">{{ $b->member->member_code ?? '' }}</div>
-                        </td>
-                        <td>{{ $b->book->title ?? '—' }}</td>
-                        <td>{{ $b->borrowing_date?->format('M d, Y') }}</td>
-                        <td>{{ $b->due_date?->format('M d, Y') }}</td>
-                        <td><span class="badge text-bg-{{ $badge }}">{{ $b->display_status }}</span></td>
-                        <td class="text-nowrap">
-                            <a href="{{ route('borrowing.show', $b->borrowing_id) }}"
-                               class="btn btn-sm btn-outline-primary" aria-label="View">
-                                <i class="bi bi-eye"></i>
-                            </a>
+                $remindLink = $memberEmail
+                ? 'https://mail.google.com/mail/?view=cm&to=' . rawurlencode($memberEmail)
+                . '&su=' . rawurlencode($remindSubject)
+                . '&body=' . rawurlencode($remindBody)
+                : '#';
+                @endphp
+                <tr>
+                    <td>
+                        {{ $b->member->full_name ?? '—' }}
+                        <div class="text-muted small">{{ $b->member->member_code ?? '' }}</div>
+                    </td>
+                    <td>{{ $b->book->title ?? '—' }}</td>
+                    <td>{{ $b->borrowing_date?->format('M d, Y') }}</td>
+                    <td>{{ $b->due_date?->format('M d, Y') }}</td>
+                    <td><span class="badge text-bg-{{ $badge }}">{{ $b->display_status }}</span></td>
+                    <td class="text-nowrap">
+                        <a href="{{ route('borrowing.show', $b->borrowing_id) }}"
+                            class="btn btn-sm btn-outline-primary" aria-label="View">
+                            <i class="bi bi-eye"></i>
+                        </a>
 
-                            @if ($b->display_status !== 'Returned')
-                                <a href="{{ $remindLink }}"
-                                   target="_blank" rel="noopener"
-                                   class="btn btn-sm btn-outline-warning remind-bell {{ $remindLink === '#' ? 'disabled' : '' }}"
-                                   data-key="reminded-borrowing-{{ $b->borrowing_id }}-{{ $b->display_status }}"
-                                   title="{{ $memberEmail ? 'Email a reminder to the member' : 'This member has no email' }}"
-                                   @if ($remindLink === '#') aria-disabled="true" tabindex="-1" @endif
-                                   aria-label="Send reminder">
-                                    <i class="bi bi-bell"></i>
-                                </a>
-                            @endif
-                        </td>
-                    </tr>
+                        @if ($b->display_status !== 'Returned')
+                        <a href="{{ $remindLink }}"
+                            target="_blank" rel="noopener"
+                            class="btn btn-sm btn-outline-warning remind-bell {{ $remindLink === '#' ? 'disabled' : '' }}"
+                            data-key="reminded-borrowing-{{ $b->borrowing_id }}-{{ $b->display_status }}"
+                            title="{{ $memberEmail ? 'Email a reminder to the member' : 'This member has no email' }}"
+                            @if ($remindLink==='#' ) aria-disabled="true" tabindex="-1" @endif
+                            aria-label="Send reminder">
+                            <i class="bi bi-bell"></i>
+                        </a>
+                        @endif
+                    </td>
+                </tr>
                 @empty
-                    <tr>
-                        <td colspan="6" class="table-empty">
-                            <i class="bi bi-inbox"></i>
-                            No borrowing records yet.
-                        </td>
-                    </tr>
+                <tr>
+                    <td colspan="6" class="table-empty">
+                        <i class="bi bi-inbox"></i>
+                        No borrowing records yet.
+                    </td>
+                </tr>
                 @endforelse
             </tbody>
         </table>
@@ -191,9 +191,9 @@
                 <label class="form-label">Status</label>
                 <select name="status" class="form-select">
                     <option value="">All</option>
-                    <option value="borrowed" @selected(request('status') === 'borrowed')>Borrowed</option>
-                    <option value="overdue"  @selected(request('status') === 'overdue')>Overdue</option>
-                    <option value="returned" @selected(request('status') === 'returned')>Returned</option>
+                    <option value="borrowed" @selected(request('status')==='borrowed' )>Borrowed</option>
+                    <option value="overdue" @selected(request('status')==='overdue' )>Overdue</option>
+                    <option value="returned" @selected(request('status')==='returned' )>Returned</option>
                 </select>
             </div>
 
@@ -219,27 +219,5 @@
 @endsection
 
 @push('scripts')
-<script>
-    // Mark a reminder bell as "sent" in this browser after it is clicked
-    document.querySelectorAll('.remind-bell').forEach(function (bell) {
-        var key = bell.dataset.key;
-
-        function markSent() {
-            bell.classList.remove('btn-outline-warning');
-            bell.classList.add('btn-warning');
-            bell.querySelector('i').className = 'bi bi-bell-fill';
-        }
-
-        try { if (localStorage.getItem(key)) markSent(); } catch (e) {}
-
-        bell.addEventListener('click', function (event) {
-            if (bell.classList.contains('disabled')) {
-                event.preventDefault();
-                return;
-            }
-            try { localStorage.setItem(key, '1'); } catch (e) {}
-            markSent();
-        });
-    });
-</script>
+<script src="{{ asset('reminder.js') }}"></script>
 @endpush

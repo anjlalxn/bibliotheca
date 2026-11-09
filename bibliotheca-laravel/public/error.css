@@ -1,22 +1,18 @@
-/* ==========================================================
-   Bibliotheca — Error pages (404, 500)
-   ========================================================== */
-
 :root {
-    /* Colors */
-    --color-primary: #0dcaf0;       /* cyan */
-    --color-primary-deep: #17707f;  /* 404 heading */
-    --color-teal-darker: #134e5a;   /* 404 error code */
-    --color-navy: #0b262e;          /* 500 background */
-    --color-offwhite: #fbf6fd;      /* icon circle */
+
+    --color-primary: #0dcaf0;
+    --color-primary-deep: #17707f;
+    --color-teal-darker: #134e5a;
+    --color-navy: #0b262e;
+    --color-offwhite: #fbf6fd;
     --color-white: #ffffff;
     --color-text-dark: #212529;
 
-    /* Fonts */
-    --font-heading: "Momo Trust Display", sans-serif;
-    --font-body: "Inter", sans-serif;
 
-    /* Spacing */
+    --font-heading: "Momo Trust Display", sans-serif;
+    --font-body: "Figtree", sans-serif;
+
+
     --space-xs: 0.25rem;
     --space-sm: 0.5rem;
     --space-md: 1rem;
@@ -24,13 +20,13 @@
     --space-xl: 2.5rem;
     --space-xxl: 3.5rem;
 
-    /* Radius */
+
     --radius-sm: 6px;
 }
 
-/* ---------- Page themes ---------- */
 
-/* Each page sets its own palette; the layout below stays the same */
+
+
 .error-404 {
     --error-bg: var(--color-primary);
     --error-title: var(--color-primary-deep);
@@ -45,7 +41,7 @@
     --error-code: var(--color-primary);
 }
 
-/* ---------- Layout ---------- */
+
 
 body {
     font-family: var(--font-body);
@@ -58,7 +54,7 @@ body {
     padding: var(--space-xxl) var(--space-lg);
 }
 
-/* Icon: Bootstrap Icons filled circle; the "!" shows the page background */
+
 .error-icon {
     font-size: 13rem;
     line-height: 1;
@@ -106,7 +102,7 @@ body {
     color: var(--color-text-dark);
 }
 
-/* ---------- Responsive ---------- */
+
 
 @media (max-width: 991.98px) {
     .error-icon {

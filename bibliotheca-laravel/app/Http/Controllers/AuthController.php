@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Str;
 
 class AuthController extends Controller
 {
@@ -23,15 +25,29 @@ class AuthController extends Controller
             'password' => ['required', 'string'],
         ]);
 
+        // Limit per username + IP so one person can't lock out everyone
+        $throttleKey = Str::lower($request->input('username')) . '|' . $request->ip();
+
+        if (RateLimiter::tooManyAttempts($throttleKey, 5)) {
+            $seconds = RateLimiter::availableIn($throttleKey);
+
+            return back()
+                ->withErrors(['username' => "Too many login attempts. Please try again in {$seconds} seconds."])
+                ->onlyInput('username');
+        }
+
         // Only active accounts can sign in.
-        // Change 'active' to match the value stored in your status column.
-        $credentials['status'] = 'active';
+        $credentials['status'] = 'Active';
 
         if (Auth::attempt($credentials)) {
+            RateLimiter::clear($throttleKey);
             $request->session()->regenerate();
 
             return redirect()->intended(route('dashboard'));
         }
+
+        // Failed attempt: count it, lock for 60 seconds after 5 failures
+        RateLimiter::hit($throttleKey, 60);
 
         return back()
             ->withErrors(['username' => 'Invalid username or password.'])

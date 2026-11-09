@@ -57,7 +57,7 @@ class CategoryController extends Controller
         ]);
 
         return redirect()->route('categories')
-            ->with('success', 'Category added successfully.');
+            ->with('categories_success', 'Category added successfully.');
     }
 
     public function update(Request $request, Category $category)
@@ -77,7 +77,7 @@ class CategoryController extends Controller
         ]);
 
         return redirect()->route('categories')
-            ->with('success', 'Category updated successfully.');
+            ->with('categories_success', 'Category updated successfully.');
     }
 
     public function destroy(Category $category)
@@ -85,12 +85,12 @@ class CategoryController extends Controller
         // Block deleting a category that still has books
         if ($category->books()->exists()) {
             return redirect()->route('categories')
-                ->with('error', 'Cannot delete this category because it still has books.');
+                ->with('categories_error', 'Cannot delete this category because it still has books.');
         }
 
         $category->delete();
 
         return redirect()->route('categories')
-            ->with('success', 'Category deleted successfully.');
+            ->with('categories_success', 'Category deleted successfully.');
     }
 }

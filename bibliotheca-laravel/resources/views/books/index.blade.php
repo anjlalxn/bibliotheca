@@ -4,56 +4,7 @@
 @section('heading', 'Books')
 
 @push('styles')
-<style>
-    /* Book preview panel cover */
-    .bk-cover {
-        width: 170px;
-        aspect-ratio: 2 / 3;
-        margin: 0 auto 1.5rem;
-        border-radius: .5rem;
-        overflow: hidden;
-        background: #e9f7fb;
-    }
-    .bk-cover img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        display: block;
-    }
-    .bk-cover-fallback {
-        width: 100%;
-        height: 100%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 3.75rem;
-        color: #0dcaf0;
-    }
-    .bk-cover.is-loading .bk-cover-fallback {
-        animation: bk-pulse 1.2s ease-in-out infinite;
-    }
-    @keyframes bk-pulse {
-        50% { opacity: .45; }
-    }
-
-    /* Filter button badge */
-    .btn-filter { position: relative; }
-    .filter-badge {
-        position: absolute;
-        top: -6px;
-        right: -6px;
-        min-width: 1.25rem;
-        height: 1.25rem;
-        padding: 0 .3rem;
-        border-radius: 999px;
-        background: #dc3545;
-        color: #fff;
-        font-size: .7rem;
-        font-weight: 600;
-        line-height: 1.25rem;
-        text-align: center;
-    }
-</style>
+<link href="{{ asset('books.css') }}" rel="stylesheet">
 @endpush
 
 @section('content')
@@ -64,17 +15,31 @@
 
     // Filter keys that need to survive a search submit
     $filterKeys = ['category_id', 'status', 'year_from', 'year_to', 'sort'];
+
+    // Popup message (success or error), if any
+    $popupSuccess = session('books_success');
+    $popupError   = session('books_error');
 @endphp
 
-<!-- Stat Cards -->
+
 <div class="stat-panel">
-    <div class="row row-cols-1 row-cols-sm-2 g-3">
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-3 g-3">
+
+        <div class="col">
+            <div class="stat-card bg-dark text-white">
+                <i class="bi bi-journal-bookmark stat-icon"></i>
+                <div class="stat-body">
+                    <p class="stat-label">Total Books</p>
+                    <p class="stat-value">{{ number_format($totalTitles) }}</p>
+                </div>
+            </div>
+        </div>
 
         <div class="col">
             <div class="stat-card stat-card--teal">
                 <i class="bi bi-book stat-icon"></i>
                 <div class="stat-body">
-                    <p class="stat-label">Total Books</p>
+                    <p class="stat-label">Total Copies</p>
                     <p class="stat-value">{{ number_format($totalBooks) }}</p>
                 </div>
             </div>
@@ -94,10 +59,10 @@
     </div>
 </div>
 
-<!-- All Books -->
+
 <section class="section-block">
 
-    <div class="d-flex flex-column-reverse flex-sm-row justify-content-between align-items-sm-center gap-3">
+    <div class="d-flex flex-column-reverse flex-sm-row justify-content-sm-between align-items-sm-center gap-3">
 
         <div class="search-toolbar d-flex align-items-center gap-2">
 
@@ -134,7 +99,7 @@
 
     </div>
 
-    <!-- Active filter summary -->
+    
     @if ($activeFilterCount > 0)
         <div class="d-flex flex-wrap align-items-center gap-2 mt-3 small text-muted">
             <span>
@@ -152,7 +117,7 @@
         </div>
     @endif
 
-    <!-- Books Table -->
+    
     <div class="table-responsive">
         <table class="table data-table">
 
@@ -198,7 +163,7 @@
 
                         <td class="text-nowrap">
 
-                            <!-- View Book -->
+                            
                             <button type="button"
                                     class="btn btn-sm btn-outline-primary view-btn"
                                     data-bs-toggle="offcanvas"
@@ -215,7 +180,7 @@
                                 <i class="bi bi-eye"></i>
                             </button>
 
-                            <!-- Edit Book -->
+                            
                             <button type="button"
                                     class="btn btn-sm btn-outline-success edit-btn"
                                     data-bs-toggle="modal"
@@ -234,7 +199,7 @@
                                 <i class="bi bi-pencil-square"></i>
                             </button>
 
-                            <!-- Delete Book -->
+                            
                             <button type="button"
                                     class="btn btn-sm btn-outline-danger delete-btn"
                                     data-bs-toggle="modal"
@@ -274,16 +239,46 @@
         </table>
     </div>
 
-    <!-- Pagination -->
+    
     <div class="mt-3">
         {{ $books->links() }}
     </div>
 
 </section>
 
-<!-- ====================================== -->
-<!-- FILTER BOOKS MODAL                     -->
-<!-- ====================================== -->
+
+
+
+@if ($popupSuccess || $popupError)
+    <div class="modal fade" id="resultModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-sm">
+            <div class="modal-content text-center p-3">
+                <div class="modal-body">
+                    @if ($popupSuccess)
+                        <i class="bi bi-check-circle-fill text-success" style="font-size: 4rem;"></i>
+                        <h5 class="fw-bold mt-2">Success</h5>
+                        <p class="mb-0">{{ $popupSuccess }}</p>
+                    @else
+                        <i class="bi bi-exclamation-circle-fill text-danger" style="font-size: 4rem;"></i>
+                        <h5 class="fw-bold mt-2">Unable to continue</h5>
+                        <p class="mb-0">{{ $popupError }}</p>
+                    @endif
+                </div>
+                <div class="modal-footer border-0 justify-content-center">
+                    <button type="button"
+                            class="btn {{ $popupSuccess ? 'btn-info text-white' : 'btn-danger' }} px-4"
+                            data-bs-dismiss="modal">
+                        OK
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+@endif
+
+
+
+
 <div class="modal fade" id="filterBooks" tabindex="-1" aria-labelledby="filterBooksLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
 
@@ -305,7 +300,7 @@
             <div class="modal-body">
                 <div class="row g-3">
 
-                    <!-- Category -->
+                    
                     <div class="col-12">
                         <label for="filter_category_id" class="form-label">Category</label>
                         <select name="category_id" id="filter_category_id" class="form-select">
@@ -319,7 +314,7 @@
                         </select>
                     </div>
 
-                    <!-- Status -->
+                    
                     <div class="col-12">
                         <label for="filter_status" class="form-label">Status</label>
                         <select name="status" id="filter_status" class="form-select">
@@ -333,7 +328,7 @@
                         </select>
                     </div>
 
-                    <!-- Publication Year Range -->
+                    
                     <div class="col-6">
                         <label for="filter_year_from" class="form-label">Year from</label>
                         <input type="number" name="year_from" id="filter_year_from"
@@ -355,7 +350,7 @@
                         </small>
                     </div>
 
-                    <!-- Sort -->
+                    
                     <div class="col-12">
                         <label for="filter_sort" class="form-label">Sort by</label>
                         <select name="sort" id="filter_sort" class="form-select">
@@ -385,9 +380,9 @@
     </div>
 </div>
 
-<!-- ====================================== -->
-<!-- ADD BOOK MODAL                         -->
-<!-- ====================================== -->
+
+
+
 <div class="modal fade" id="addBook" tabindex="-1" aria-hidden="true"
      data-show-on-load="{{ $errors->any() && ! $editFailed ? '1' : '0' }}">
     <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
@@ -555,9 +550,9 @@
     </div>
 </div>
 
-<!-- ====================================== -->
-<!-- EDIT BOOK MODAL                        -->
-<!-- ====================================== -->
+
+
+
 <div class="modal fade" id="editBook" tabindex="-1" aria-labelledby="editBookLabel" aria-hidden="true"
      data-show-on-load="{{ $editFailed ? '1' : '0' }}">
     <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
@@ -717,9 +712,9 @@
     </div>
 </div>
 
-<!-- ====================================== -->
-<!-- DELETE BOOK CONFIRMATION MODAL         -->
-<!-- ====================================== -->
+
+
+
 <div class="modal fade" id="deleteBook" tabindex="-1" aria-labelledby="deleteBookLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
@@ -749,9 +744,9 @@
     </div>
 </div>
 
-<!-- ====================================== -->
-<!-- VIEW BOOK DETAILS PANEL                -->
-<!-- ====================================== -->
+
+
+
 <div class="offcanvas offcanvas-end" tabindex="-1" id="viewBook" aria-labelledby="viewBookLabel">
 
     <div class="offcanvas-header">
@@ -764,7 +759,7 @@
 
     <div class="offcanvas-body">
 
-        <!-- Book Cover -->
+        
         <div class="bk-cover" id="v-cover-box">
             <img id="v-cover" alt="Book cover" hidden>
             <div id="v-cover-fallback" class="bk-cover-fallback">
@@ -772,7 +767,7 @@
             </div>
         </div>
 
-        <!-- Open Library Disclaimer -->
+        
         <div class="alert alert-light border small text-muted mb-4">
             <i class="bi bi-info-circle me-1"></i>
             <strong>About Book Covers</strong>
@@ -783,7 +778,7 @@
             </p>
         </div>
 
-        <!-- Book Details -->
+        
         <dl>
             <dt>Author</dt>
             <dd id="v-author"></dd>
@@ -810,199 +805,5 @@
 @endsection
 
 @push('scripts')
-<script>
-    document.addEventListener('DOMContentLoaded', function () {
-
-        // ==========================================
-        // ADD / EDIT MODALS: reopen if validation fails
-        // ==========================================
-        ['addBook', 'editBook'].forEach(function (id) {
-            const modal = document.getElementById(id);
-            if (modal && modal.dataset.showOnLoad === '1') {
-                bootstrap.Modal.getOrCreateInstance(modal).show();
-            }
-        });
-
-        // ==========================================
-        // FILTER MODAL: don't send empty fields
-        // ==========================================
-        const filterForm = document.querySelector('#filterBooks form');
-
-        if (filterForm) {
-            filterForm.addEventListener('submit', function () {
-                filterForm.querySelectorAll('input, select').forEach(function (field) {
-                    // Skip the default sort too
-                    if (field.value === '' || (field.name === 'sort' && field.value === 'id')) {
-                        field.disabled = true;
-                    }
-                });
-            });
-        }
-
-        // ==========================================
-        // EDIT BOOK MODAL
-        // ==========================================
-        const editForm = document.getElementById('editBookForm');
-        const editBookId = document.getElementById('edit_book_id');
-        const editBorrowedNote = document.getElementById('edit_borrowed_note');
-
-        document.querySelectorAll('.edit-btn').forEach(function (btn) {
-            btn.addEventListener('click', function () {
-                const d = this.dataset;
-
-                editForm.action = d.url;
-                editBookId.value = d.bookId;
-
-                document.getElementById('edit_title').value = d.title || '';
-                document.getElementById('edit_author').value = d.author || '';
-                document.getElementById('edit_category_id').value = d.categoryId || '';
-                document.getElementById('edit_publisher').value = d.publisher || '';
-                document.getElementById('edit_publication_year').value = d.year || '';
-                document.getElementById('edit_quantity').value = d.qty || 1;
-                document.getElementById('edit_status').value =
-                    d.status === 'unavailable' ? 'unavailable' : 'available';
-
-                // Show how many copies are currently out, and don't
-                // let the quantity go below that in the browser either
-                const borrowed = parseInt(d.borrowed || '0', 10);
-                const qtyInput = document.getElementById('edit_quantity');
-
-                if (d.status === 'available' && borrowed > 0) {
-                    qtyInput.min = borrowed;
-                    editBorrowedNote.textContent =
-                        borrowed + ' cop' + (borrowed === 1 ? 'y is' : 'ies are')
-                        + ' currently borrowed, so quantity cannot go below that.';
-                } else {
-                    qtyInput.min = 1;
-                    editBorrowedNote.textContent = 'Total number of physical copies.';
-                }
-
-                // Clear errors left over from a previous failed attempt
-                const oldErrors = document.getElementById('editErrors');
-                if (oldErrors) oldErrors.remove();
-
-                editForm.querySelectorAll('.is-invalid').forEach(function (el) {
-                    el.classList.remove('is-invalid');
-                });
-            });
-        });
-
-        // ==========================================
-        // DELETE BOOK MODAL
-        // ==========================================
-        const deleteForm = document.getElementById('deleteBookForm');
-        const deleteTitle = document.getElementById('deleteBookTitle');
-
-        document.querySelectorAll('.delete-btn').forEach(function (btn) {
-            btn.addEventListener('click', function () {
-                deleteTitle.textContent = this.dataset.title || 'this book';
-                deleteForm.action = this.dataset.url;
-            });
-        });
-
-        // ==========================================
-        // BOOK COVER PREVIEW
-        // ==========================================
-        const coverBox = document.getElementById('v-cover-box');
-        const coverImg = document.getElementById('v-cover');
-        const coverFallback = document.getElementById('v-cover-fallback');
-
-        const coverCache = new Map();
-        let latestRequest = 0;
-
-        // Display cover or fallback icon
-        function showCover(url) {
-            coverBox.classList.remove('is-loading');
-
-            if (url) {
-                coverImg.src = url;
-                coverImg.hidden = false;
-                coverFallback.hidden = true;
-            } else {
-                coverImg.hidden = true;
-                coverImg.removeAttribute('src');
-                coverFallback.hidden = false;
-            }
-        }
-
-        // Handle failed image loading
-        coverImg.addEventListener('error', function () {
-            showCover(null);
-        });
-
-        // Open Library lookup: title + author first, then title alone
-        async function findCover(title, author) {
-            const key = title.trim().toLowerCase() + '|' + author.trim().toLowerCase();
-
-            if (coverCache.has(key)) {
-                return coverCache.get(key);
-            }
-
-            const attempts = author
-                ? [{ title: title, author: author }, { title: title }]
-                : [{ title: title }];
-
-            let url = null;
-
-            for (const query of attempts) {
-                try {
-                    const params = new URLSearchParams({ ...query, limit: '1', fields: 'cover_i' });
-                    const response = await fetch('https://openlibrary.org/search.json?' + params);
-
-                    if (!response.ok) continue;
-
-                    const data = await response.json();
-                    const coverId = data.docs?.[0]?.cover_i;
-
-                    if (coverId) {
-                        url = 'https://covers.openlibrary.org/b/id/'
-                            + encodeURIComponent(coverId)
-                            + '-L.jpg?default=false';
-                        break;
-                    }
-                } catch (error) {
-                    console.warn('Open Library lookup failed:', error);
-                }
-            }
-
-            // Cache result, including missing covers
-            coverCache.set(key, url);
-            return url;
-        }
-
-        // ==========================================
-        // VIEW BOOK DETAILS
-        // ==========================================
-        document.querySelectorAll('.view-btn').forEach(function (btn) {
-            btn.addEventListener('click', async function () {
-                const data = this.dataset;
-
-                ['id', 'title', 'author', 'publisher', 'year', 'qty', 'category', 'status']
-                    .forEach(function (key) {
-                        document.getElementById('v-' + key).textContent = data[key] || '—';
-                    });
-
-                // Change status text color
-                const status = document.getElementById('v-status');
-                status.className = 'fw-bold ' +
-                    (data.status?.startsWith('Available') ? 'text-success' : 'text-danger');
-
-                // Reset cover before loading another one
-                showCover(null);
-                coverBox.classList.add('is-loading');
-
-                // Track latest request to avoid outdated responses
-                const request = ++latestRequest;
-
-                const url = await findCover(data.title || '', data.author || '');
-
-                // Only update the currently selected book
-                if (request === latestRequest) {
-                    showCover(url);
-                }
-            });
-        });
-
-    });
-</script>
+<script src="{{ asset('books.js') }}"></script>
 @endpush

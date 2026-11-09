@@ -59,11 +59,7 @@ class BookController extends Controller
                       ->orWhere('author', 'like', "%{$search}%")
                       ->orWhere('publisher', 'like', "%{$search}%")
                       ->orWhereHas('category', function ($c) use ($search) {
-                          $c->where(
-                              'category_name',
-                              'like',
-                              "%{$search}%"
-                          );
+                          $c->where('category_name', 'like', "%{$search}%");
                       });
                 });
             })
@@ -113,6 +109,7 @@ class BookController extends Controller
             'books' => $books,
             'categories' => Category::orderBy('category_name')->get(),
             'totalBooks' => Book::sum('quantity'),
+            'totalTitles' => Book::count(),
             'filters' => [
                 'category_id' => $categoryId,
                 'status'      => $status,
@@ -136,7 +133,7 @@ class BookController extends Controller
         if ($this->isDuplicate($data)) {
             return back()
                 ->withErrors([
-                    'title' => 'This book already exists in your catalog. Update its quantity instead of adding another record.'
+                    'title' => 'This book already exists in your catalog (same title and author). Update its quantity instead of adding another record.'
                 ])
                 ->withInput();
         }
@@ -147,11 +144,11 @@ class BookController extends Controller
                 ? $data['quantity']
                 : 0;
 
-        Book::create($data);
+        $book = Book::create($data);
 
         return redirect()
             ->route('books')
-            ->with('success', 'Book successfully added to the catalog.');
+            ->with('books_success', "Book \"{$book->title}\" added to the catalog.");
     }
 
     // Update an existing book
@@ -168,7 +165,7 @@ class BookController extends Controller
         if ($this->isDuplicate($data, $book->book_id)) {
             return back()
                 ->withErrors([
-                    'title' => 'Another book with the same title, author, publisher, and year already exists.'
+                    'title' => 'Another book with the same title and author already exists.'
                 ], 'editBook')
                 ->withInput();
         }
@@ -200,7 +197,7 @@ class BookController extends Controller
 
         return redirect()
             ->route('books')
-            ->with('success', 'Book successfully updated.');
+            ->with('books_success', "Book \"{$book->title}\" updated successfully.");
     }
 
     // Delete a book
@@ -208,16 +205,18 @@ class BookController extends Controller
     {
         if ($book->borrowings()->exists()) {
             return back()->with(
-                'error',
+                'books_error',
                 'This book has borrowing records and cannot be deleted.'
             );
         }
 
+        $title = $book->title;
+
         $book->delete();
 
         return back()->with(
-            'success',
-            'Book successfully deleted.'
+            'books_success',
+            "Book \"{$title}\" deleted successfully."
         );
     }
 
@@ -295,38 +294,21 @@ class BookController extends Controller
         return $data;
     }
 
-    // Compare title, author, publisher, and publication year.
+    // A book is a duplicate when another record has the same title AND
+    // author (ignoring upper/lower case and extra spaces). Publisher and
+    // year are NOT compared, so a blank or different publisher/year can no
+    // longer sneak a duplicate through.
     // Pass $ignoreId to exclude the book currently being edited.
     private function isDuplicate(array $data, ?int $ignoreId = null): bool
     {
+        $clean = fn (string $text) => mb_strtolower(
+            trim(preg_replace('/\s+/', ' ', $text))
+        );
+
         return Book::query()
             ->when($ignoreId, fn ($q) => $q->where('book_id', '!=', $ignoreId))
-            ->whereRaw('LOWER(TRIM(title)) = ?', [
-                mb_strtolower($data['title'])
-            ])
-            ->whereRaw('LOWER(TRIM(author)) = ?', [
-                mb_strtolower($data['author'])
-            ])
-            ->where(function ($query) use ($data) {
-                if ($data['publisher'] === null) {
-                    $query->whereNull('publisher');
-                } else {
-                    $query->whereRaw(
-                        'LOWER(TRIM(publisher)) = ?',
-                        [mb_strtolower($data['publisher'])]
-                    );
-                }
-            })
-            ->where(function ($query) use ($data) {
-                if ($data['publication_year'] === null) {
-                    $query->whereNull('publication_year');
-                } else {
-                    $query->where(
-                        'publication_year',
-                        $data['publication_year']
-                    );
-                }
-            })
+            ->whereRaw('LOWER(TRIM(title)) = ?', [$clean($data['title'])])
+            ->whereRaw('LOWER(TRIM(author)) = ?', [$clean($data['author'])])
             ->exists();
     }
 }

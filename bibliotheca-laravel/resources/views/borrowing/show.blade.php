@@ -8,6 +8,17 @@
     $ids   = session('created_ids', [$borrowing->borrowing_id]);
     $tids  = collect($ids)->map(fn ($id) => 'B-' . str_pad($id, 3, '0', STR_PAD_LEFT));
     $badge = ['Returned' => 'success', 'Overdue' => 'danger', 'Borrowed' => 'info'][$borrowing->display_status];
+
+    // Returned after the due date = returned late
+    $returnedLate = $borrowing->return_date && $borrowing->due_date
+        && $borrowing->return_date->toDateString() > $borrowing->due_date->toDateString();
+
+    $daysLate = $returnedLate
+        ? (int) $borrowing->due_date->diffInDays($borrowing->return_date)
+        : 0;
+
+    // Due date is red while the book is overdue or was returned late
+    $dueIsRed = $returnedLate || $borrowing->display_status === 'Overdue';
 @endphp
 
 <div class="card p-4">
@@ -28,13 +39,19 @@
                     <i id="book-cover-fallback" class="bi bi-journal-text text-info" style="font-size: 7rem;"></i>
                 </div>
                 <h2 class="fw-bold">
-                    <span class="badge text-bg-{{ $badge }}">{{ $borrowing->display_status }}</span>
+                    @if ($returnedLate)
+                        <span class="badge text-bg-warning">
+                            <i class="bi bi-exclamation-triangle me-1"></i>Returned Late
+                        </span>
+                    @else
+                        <span class="badge text-bg-{{ $badge }}">{{ $borrowing->display_status }}</span>
+                    @endif
                 </h2>
             @endif
         </div>
 
         <div class="col-md-7">
-            <h5 class="text-info"> 
+            <h5 class="text-info">
                 Borrow Transaction ID{{ $tids->count() > 1 ? 's' : '' }}: {{ $tids->join(', ') }}
             </h5>
             @if ($tids->count() > 1)
@@ -50,16 +67,38 @@
             <div>{{ $borrowing->book->category->category_name ?? '' }}</div>
             <div>{{ $borrowing->book->publication_year ?? '' }}</div>
 
-            <div class="row mt-3">
-                <div class="col-6">
+            <div class="row mt-3 g-3">
+                <div class="col-sm-4">
                     <div class="fw-semibold">Borrow Date</div>
                     <div class="text-success">{{ $borrowing->borrowing_date?->format('F j, Y') }}</div>
                 </div>
-                <div class="col-6">
+                <div class="col-sm-4">
                     <div class="fw-semibold">Due Date</div>
-                    <div class="text-danger">{{ $borrowing->due_date?->format('F j, Y') }}</div>
+                    <div class="{{ $dueIsRed ? 'text-danger' : '' }}">
+                        {{ $borrowing->due_date?->format('F j, Y') }}
+                    </div>
+                </div>
+                <div class="col-sm-4">
+                    <div class="fw-semibold">Return Date</div>
+                    @if ($borrowing->return_date)
+                        <div class="{{ $returnedLate ? 'text-warning-emphasis fw-semibold' : 'text-success' }}">
+                            {{ $borrowing->return_date->format('F j, Y') }}
+                        </div>
+                    @else
+                        <div class="text-muted">Not yet returned</div>
+                    @endif
                 </div>
             </div>
+
+            @if ($returnedLate)
+                <div class="alert alert-warning d-flex align-items-center gap-2 mt-3 mb-0" role="alert">
+                    <i class="bi bi-exclamation-triangle-fill"></i>
+                    <div>
+                        <strong>Returned late.</strong>
+                        This book came back {{ $daysLate }} day(s) after its due date.
+                    </div>
+                </div>
+            @endif
 
             <div class="d-flex gap-2 mt-4">
                 @if (session('created'))
@@ -74,40 +113,6 @@
 </div>
 
 @unless (session('created'))
-    <script>
-        document.addEventListener('DOMContentLoaded', async () => {
-            const box = document.getElementById('book-cover-box');
-            if (!box) return;
-
-            const title = box.dataset.title;
-            const author = box.dataset.author;
-            const img = document.getElementById('book-cover-img');
-            const fallback = document.getElementById('book-cover-fallback');
-
-            // Try title + author first, then title only
-            const attempts = author ? [{ title, author }, { title }] : [{ title }];
-
-            for (const q of attempts) {
-                try {
-                    const params = new URLSearchParams({ ...q, limit: '1', fields: 'cover_i' });
-                    const res = await fetch('https://openlibrary.org/search.json?' + params);
-                    if (!res.ok) continue;
-
-                    const data = await res.json();
-                    const coverId = data.docs && data.docs[0] && data.docs[0].cover_i;
-
-                    if (coverId) {
-                        // Swap only after the image has actually loaded
-                        img.onload = () => {
-                            img.style.display = 'inline-block';
-                            fallback.style.display = 'none';
-                        };
-                        img.src = 'https://covers.openlibrary.org/b/id/' + coverId + '-L.jpg?default=false';
-                        break;
-                    }
-                } catch (e) { /* ignore network errors, keep the icon */ }
-            }
-        });
-    </script>
+    <script src="{{ asset('borrow_info.js') }}" defer></script>
 @endunless
 @endsection
