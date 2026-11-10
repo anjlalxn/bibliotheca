@@ -1,4 +1,4 @@
-# Bibliotheca – Library Management System
+# Bibliotheca – Library Management System (Cloud Version)
 
 **Advanced Web Development Course – Final Project**
 
@@ -267,8 +267,8 @@ Open Library is a project of the [Internet Archive](https://archive.org/).
 This project is intended for educational and academic purposes.
 
 ## Project Repository
+This version prioritizes data integrity (prevent XAMPP database corruption issues) over raw local speed by using a cloud DB platform. If you wish to use the Local Version, you may visit the link below.
 
-[GitHub – Bibliotheca](https://github.com/anjlalxn/bibliotheca)
 [GitHub – Bibliotheca XAMPP (For Professor's Copy)](https://github.com/anjlalxn/bibliothecaLocal)
 
 # Screenshots
