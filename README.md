@@ -269,6 +269,7 @@ This project is intended for educational and academic purposes.
 ## Project Repository
 
 [GitHub – Bibliotheca](https://github.com/anjlalxn/bibliotheca)
+[GitHub – Bibliotheca XAMPP (For Professor's Copy)](https://github.com/anjlalxn/bibliothecaLocal)
 
 # Screenshots
 <img src="https://i.postimg.cc/nrXhLQMV/image.png" alt="Screenshot 1">
